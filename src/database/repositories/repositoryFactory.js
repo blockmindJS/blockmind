@@ -7,7 +7,6 @@ class RepositoryFactory {
         const config = getConfig();
 
         if (config.customRepositories && config.customRepositories[repositoryType]) {
-            // Use 'new' to instantiate custom repositories
             return new config.customRepositories[repositoryType](config.dbType);
         }
 

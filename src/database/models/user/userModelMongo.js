@@ -9,10 +9,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    group: {
+    groups: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group'
-    }
+    }]
 });
 
 const UserMongo = mongoose.model('User', userSchema);

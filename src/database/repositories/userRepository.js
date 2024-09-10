@@ -25,13 +25,33 @@ class UserRepository extends IUserRepository {
 
         let user;
         try {
+            let groupNames = userData.groupNames || ['User'];
+
+            let userGroups;
             if (this.dbType === 'sqlite') {
+                userGroups = await this.models.Group.findAll({ where: { name: groupNames } });
+                if (!userGroups || userGroups.length === 0) {
+                    throw new Error('No groups found in SQLite.');
+                }
+
                 user = await this.models.User.create({ username: userData.username });
-                console.log(`User created in SQLite: ${JSON.stringify(user)}`);
+
+                await user.setGroups(userGroups);
+
+                console.log(`User created in SQLite with groups: ${groupNames.join(', ')}`);
             } else if (this.dbType === 'mongodb') {
-                user = new this.models.User(userData);
+                userGroups = await this.models.Group.find({ name: { $in: groupNames } });
+                if (!userGroups || userGroups.length === 0) {
+                    throw new Error('No groups found in MongoDB.');
+                }
+
+                user = new this.models.User({
+                    username: userData.username,
+                    groups: userGroups.map(group => group._id)
+                });
                 await user.save();
-                console.log(`User created in MongoDB: ${JSON.stringify(user)}`);
+
+                console.log(`User created in MongoDB with groups: ${groupNames.join(', ')}`);
             }
         } catch (error) {
             console.error(`Error creating user: ${error.message}`);
@@ -40,6 +60,9 @@ class UserRepository extends IUserRepository {
 
         return user;
     }
+
+
+
 
     async getUserByUsername(username) {
         await this.ensureModelsInitialized();

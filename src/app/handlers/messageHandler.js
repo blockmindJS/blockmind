@@ -3,6 +3,7 @@ const { parseArguments } = require('../utils/parseArguments');
 const winston = require('winston');
 const { parseMessage } = require('../utils/parse');
 const UserService = require("../../database/services/userService");
+const Users = require("../../database/repositories/Users");
 
 const logger = winston.createLogger({
     level: 'info',
@@ -54,8 +55,7 @@ async function commandHandler(bot, type, nick, message) {
 
     console.log(`Executing command: ${commandName}`);
 
-    const userService = new UserService();
-    const user = await userService.getUserByUsername(nick);
+    const user = new Users(nick);
 
     await command.execute(bot, type, user, args);
 }

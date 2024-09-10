@@ -30,7 +30,6 @@ class UserService {
     async getUserByUsername(username) {
         let user = await this.userRepository.getUserByUsername(username);
 
-        // Если пользователь не найден или данные некорректны, бросаем исключение
         if (!user) {
             throw new Error('User not found or User model is not loaded correctly.');
         }
@@ -48,11 +47,9 @@ class User {
      * @param {UserRepository} userRepository
      */
     constructor(userData, userRepository) {
-        // Проверяем, является ли userData экземпляром модели Sequelize (используем метод get()) или обычным объектом
         this._userData = userData && typeof userData.get === 'function' ? userData.get() : userData;
         this._userRepository = userRepository;
 
-        // Если данные пользователя не существуют, выбрасываем ошибку
         if (!this._userData) {
             throw new Error('User data is not valid.');
         }

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 
 function initializeUserModel(sequelize) {
-    return sequelize.define('User', {
+    const User = sequelize.define('User', {
         username: {
             type: DataTypes.STRING,
             allowNull: false
@@ -10,16 +10,14 @@ function initializeUserModel(sequelize) {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
             allowNull: true
-        },
-        groupId: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            references: {
-                model: 'Groups',
-                key: 'id'
-            }
         }
     });
+
+    const Group = require('../group/groupModelSQLite')(sequelize);
+    User.belongsToMany(Group, { through: 'UserGroups' });
+    Group.belongsToMany(User, { through: 'UserGroups' });
+
+    return User;
 }
 
 module.exports = initializeUserModel;
