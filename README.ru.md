@@ -1,6 +1,13 @@
 ![npm](https://img.shields.io/npm/v/blockmind)
 
-https://github.com/mmeerrkkaa/blockmind-example
+# 🌐 BlockMind Documentation
+
+Это основная документация на **Русском** языке. Вы также можете просмотреть документацию на других языках:
+
+| 🌍 **Доступные языки** | [![EN](https://img.shields.io/badge/lang-English-blue)](./README.md) | [![RU](https://img.shields.io/badge/lang-Russian-red)](./README.ru.md) |
+| -------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
+
+---
 
 # BlockMind
 
