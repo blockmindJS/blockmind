@@ -36,23 +36,26 @@ async function loadPluginFromGithub(repoUrl, localPath) {
  * @param {Array<Object>} plugins - Список конфигураций плагинов
  */
 async function initializePlugins(bot, plugins) {
+    const loadedPlugins = [];
+
     for (const pluginConfig of plugins) {
         let PluginClass;
 
-        // Локальный плагин
         if (pluginConfig.type === 'local') {
             PluginClass = require(path.resolve(process.cwd(), pluginConfig.path));
-        }
-        // Плагин с GitHub
-        else if (pluginConfig.type === 'github') {
+        } else if (pluginConfig.type === 'github') {
             PluginClass = await loadPluginFromGithub(pluginConfig.repoUrl, pluginConfig.localPath);
         }
 
         if (PluginClass) {
             const pluginInstance = new PluginClass(bot);
             pluginInstance.start();
+            loadedPlugins.push(pluginInstance);
         }
     }
+
+    return loadedPlugins;
 }
+
 
 module.exports = { initializePlugins };

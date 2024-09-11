@@ -6,12 +6,7 @@ const initializeDatabase = require("./database/dbInitializer");
 const { setConfig } = require("./config/config");
 const RepositoryFactory = require('./database/repositories/repositoryFactory');
 const { commandsRegistry } = require("./index");
-const simpleGit = require('simple-git');
-const path = require('path');
-const fs = require('fs');
-const { exec } = require('child_process');
-const {initializePlugins} = require("./plugins/initializePlugins");
-
+const { initializePlugins } = require('./plugins/initializePlugins');  // Инициализация плагинов
 
 /**
  * @typedef {import('mineflayer').Bot} MineflayerBot
@@ -23,10 +18,10 @@ const {initializePlugins} = require("./plugins/initializePlugins");
  *   COMMAND_PREFIX: string,
  *   MC_SERVER: number,
  *   sendMessage(chatType: string, message: string, username?: string, delay?: number): void,
- *   getRepository(repositoryType: string): any
+ *   getRepository(repositoryType: string): any,
+ *   plugins: Object[]
  * }} BotInstance
  */
-
 
 /**
  * Creates and initializes the bot.
@@ -75,7 +70,7 @@ async function createBot(botOptions) {
     };
 
     if (botOptions.plugins) {
-        await initializePlugins(bot, botOptions.plugins);
+        bot.plugins = await initializePlugins(bot, botOptions.plugins);
     }
 
     return bot;
