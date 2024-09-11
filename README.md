@@ -1,12 +1,20 @@
 ![npm](https://img.shields.io/npm/v/blockmind)
 
-https://github.com/mmeerrkkaa/blockmind-example
+# 🌐 BlockMind Documentation
+
+This is the main documentation in **English**. You can also view the documentation in other languages:
+
+| 🌍 **Languages Available** | [![EN](https://img.shields.io/badge/lang-English-blue)](./README.md) | [![RU](https://img.shields.io/badge/lang-Russian-red)](./README.ru.md) |
+| -------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
+
+---
 
 # BlockMind
 
 A framework for creating bots on Minecraft servers. Easily extend functionality through custom models, repositories, commands and plugins.
 
 ## 🔑 Main Features
+
 
 - **📦 Custom Models** Create and integrate your own models into the bot with no extra effort. Your models can be stored in a database, either via SQLite or MongoDB.
 
