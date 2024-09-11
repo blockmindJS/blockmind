@@ -9,6 +9,16 @@ This is the main documentation in **English**. You can also view the documentati
 
 ---
 
+## 🛠 Example Project
+
+You can find a working example of using the **BlockMind** library in this repository:
+
+[🔗 BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+
+---
+
+# BlockMind
+
 # BlockMind
 
 A framework for creating bots on Minecraft servers. Easily extend functionality through custom models, repositories, commands and plugins.
