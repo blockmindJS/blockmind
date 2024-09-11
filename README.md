@@ -9,26 +9,41 @@ This is the main documentation in **English**. You can also view the documentati
 
 ---
 
+## 🛠 Example Project
+
+You can find a working example of using the **BlockMind** library in this repository:
+
+[🔗 BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+
+---
+
+
 # BlockMind
 
 A framework for creating bots on Minecraft servers. Easily extend functionality through custom models, repositories, commands and plugins.
 
 ## 🔑 Main Features
 
+- **📦 Custom Models**  
+  Create and integrate your own models into the bot with no extra effort. Your models can be stored in a database, either via SQLite or MongoDB.
 
-- **📦 Custom Models** Create and integrate your own models into the bot with no extra effort. Your models can be stored in a database, either via SQLite or MongoDB.
+- **💬 Command System**  
+  Create commands to interact with the bot and server. Includes permission checking, setting up cooldowns, and arguments.
 
-- **💬 Command System** Create commands to interact with the bot and server. Includes permission checking, setting up kldowns and arguments.
+- **🔐 Role and Permissions Management**  
+  Easily manage user roles and permissions through SQLite or MongoDB integrations.
 
-- **🔐 Role and Permissions Management** Easily manage user roles and permissions through SQLite or MongoDB integrations.
+- **🔌 Plugins**  
+  Support plugins both locally and via GitHub repositories with auto-update functionality.
 
-- **🔌 Plugins** Support plugins both locally and via GitHub repositories with auto-update functionality.
+- **⚙️ Flexible Configuration**  
+  Full control over configuration, including choosing the database type (SQLite or MongoDB), setting chat delays, and command prefixes.
 
-- **⚙️ Flexible Configuration** Full control over configuration, including choosing database type (SQLite or MongoDB), setting chat delays and command prefixes.
+- **📬 Message Queuing**  
+  Queuing system for managing chat messages with customizable delays for different chat types: local, global, clan, private.
 
-- **📬 Message Queuing** Queuing system for managing chat messages with customizable delays for different chat types: local, global, clan, private.
-
-- **♻️ Autoupdate** Automatically download and apply plugin updates from GitHub with the option to manually control and autoupdate based on repository settings.
+- **♻️ Autoupdate**  
+  Automatically download and apply plugin updates from GitHub with the option to manually control and autoupdate based on repository settings.
 
 ## 🛠 Bot Configuration
 
