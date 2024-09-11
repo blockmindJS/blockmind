@@ -39,7 +39,7 @@ function extractUsernameFromClickEventPrivate(jsonMsg) {
 }
 
 
-async function parseMessage(bot, messageText, jsonMsg) {
+async function parseMessageMasedWorld(bot, messageText, jsonMsg) {
     const privatePattern = /\[(.*?)\s+->\s+я\]\s+(.+)/;
     const clanPattern = /КЛАН:\s*(.+?):\s*(.*)/;
     const cleanedMessageText = messageText.replace(/❤\s?/u, '').trim();
@@ -83,16 +83,107 @@ async function parseMessage(bot, messageText, jsonMsg) {
     }
 }
 
-async function parseTeleportMessage(message) {
-    const regex = /(\w+) телепортировал вас к (\w+)/;
+async function parseMessageMinBlaze(bot, messageText, jsonMsg) {
+    const privatePattern = /\[(.*?)\s+->\s+я\]\s+(.+)/;
+    const clanPattern = /КЛАН:\s*(.+?):\s*(.*)/;
+    const cleanedMessageText = messageText.replace(/❤\s?/u, '').trim();
 
-    const match = message.match(regex);
+    try {
+        const match = cleanedMessageText.match(privatePattern);
+        if (match) {
+            const message = match[2];
+            const nick = extractUsernameFromClickEventPrivate(jsonMsg);
 
-    if (match) {
-        return { nickname: match[1], message: `${match[1]} телепортировал вас к ${match[2]}.` };
+            return { type: 'private', nick, message };
+        } else if (/\[ʟ\]/.test(cleanedMessageText)) {
+            const arrowIndex = cleanedMessageText.indexOf('→');
+            const prefixText = cleanedMessageText.substring(0, arrowIndex).trim();
+            const messageContent = cleanedMessageText.substring(arrowIndex + 1).trim();
+
+            const nick = extractClickEvent(jsonMsg);
+            if (nick) {
+                return { type: 'local', nick, message: messageContent };
+            }
+        } else if (/\[ɢ\]/.test(cleanedMessageText)) {
+            const arrowIndex = cleanedMessageText.indexOf('→');
+            const prefixText = cleanedMessageText.substring(0, arrowIndex).trim();
+            const messageContent = cleanedMessageText.substring(arrowIndex + 1).trim();
+
+            const nick = extractClickEvent(jsonMsg);
+            if (nick) {
+                return { type: 'global', nick, message: messageContent };
+            }
+        } else if (cleanedMessageText.startsWith("КЛАН:")) {
+            const match = cleanedMessageText.match(clanPattern);
+            if (match) {
+                const words = match[1].trim().split(/\s+/);
+                const part = words.length > 1 ? words[words.length - 1] : words[0];
+
+                return { type: 'clan', nick: part, message: match[2] };
+            }
+        }
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+
+async function parseMessageCheatMine(bot, messageText, jsonMsg) {
+    const privatePattern = /\[\*\] \[(.*?)\s+([^\[\]\s]+) -> я\] (.+)/;
+    const clanPattern = /КЛАН:\s*(.+?):\s*(.*)/;
+    const cleanedMessageText = messageText.replace(/❤\s?/u, '').trim();
+
+    try {
+        if (/\я\]/.test(messageText)) {
+            const match = messageText.match(privatePattern);
+            if (match) {
+                const nick = extractUsernameFromClickEventPrivate(jsonMsg);
+                return { type: 'private', nick, message: match[3] };
+            }
+        } else if (/\[ʟ\]/.test(cleanedMessageText)) {
+            const arrowIndex = cleanedMessageText.indexOf('⇨');
+            const prefixText = cleanedMessageText.substring(0, arrowIndex).trim();
+            const messageContent = cleanedMessageText.substring(arrowIndex + 1).trim();
+
+            const nick = extractClickEvent(jsonMsg);
+            if (nick) {
+                return { type: 'local', nick, message: messageContent };
+            }
+        } else if (/\[ɢ\]/.test(cleanedMessageText)) {
+            const arrowIndex = cleanedMessageText.indexOf('⇨');
+            const prefixText = cleanedMessageText.substring(0, arrowIndex).trim();
+            const messageContent = cleanedMessageText.substring(arrowIndex + 1).trim();
+
+            const nick = extractClickEvent(jsonMsg);
+            if (nick) {
+                return { type: 'global', nick, message: messageContent };
+            }
+        } else if (cleanedMessageText.startsWith("КЛАН:")) {
+            const match = cleanedMessageText.match(clanPattern);
+            if (match) {
+                const words = match[1].trim().split(/\s+/);
+                const part = words.length > 1 ? words[words.length - 1] : words[0];
+
+                return { type: 'clan', nick: part, message: match[2] };
+            }
+        }
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+async function parseMessage(bot, messageText, jsonMsg) {
+    if (bot.host === 'mc.mineblaze.net') {
+        return await parseMessageMinBlaze(bot, messageText, jsonMsg);
+    } else if (bot.host === 'mc.masedworld.net') {
+        return await parseMessageMasedWorld(bot, messageText, jsonMsg);
+    } else if (bot.host === 'mc.cheatmine.net') {
+        return await parseMessageCheatMine(bot, messageText, jsonMsg);
+    } else {
+        return { error: 'Unknown server' };
     }
 }
 
 
 
-module.exports = { parseMessage, parseTeleportMessage };
+module.exports = { parseMessage };

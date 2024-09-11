@@ -20,6 +20,7 @@ const logger = winston.createLogger({
 
 async function processChatMessage(bot, jsonMsg) {
     const messageText = jsonMsg.toString();
+    console.log(` ${messageText}`);
     const COMMAND_PREFIX = bot.COMMAND_PREFIX || '@';
 
     try {
