@@ -1,7 +1,6 @@
+![npm](https://img.shields.io/npm/v/blockmind)
+
 https://github.com/mmeerrkkaa/blockmind-example
-
-
-
 
 # BlockMind
 
