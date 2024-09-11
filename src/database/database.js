@@ -28,7 +28,7 @@ async function connectDatabase(botOptions) {
 async function connectMongoDB() {
     const config = getConfig();
     try {
-        await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+        await mongoose.connect(config.mongodb.url, config.mongodb.options);
         console.log('Подключение к MongoDB установлено.');
     } catch (err) {
         console.error('Ошибка подключения MongoDB:', err);

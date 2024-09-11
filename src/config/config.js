@@ -8,6 +8,7 @@ function getConfig() {
 }
 
 function setConfig(customConfig = {}) {
+
     currentConfig = {
         dbType: customConfig.dbType || 'sqlite',
         customRepositories: customConfig.customRepositories || {},
@@ -16,10 +17,8 @@ function setConfig(customConfig = {}) {
             storage: customConfig.sqlite?.storage || path.resolve(process.cwd(), './sqlite.db'),
         },
         mongodb: {
-            uri: customConfig.mongodb?.uri || 'mongodb://localhost:27017/mydatabase',
+            url: customConfig.mongodb?.url || 'mongodb://localhost:27017/mydatabase',
             options: {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
                 ...customConfig.mongodb?.options,
             },
         },

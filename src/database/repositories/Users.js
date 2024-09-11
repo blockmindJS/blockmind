@@ -1,10 +1,12 @@
 const UserRepository = require('./userRepository');
+const getConfig = require('../../config/config');
 
 class Users {
     constructor(username) {
         this.username = username;
         this.userData = null;
-        this.userRepository = new UserRepository('sqlite');
+        this.config = getConfig;
+        this.userRepository = new UserRepository(this.config.getConfig().dbType);
     }
 
     async init() {
@@ -48,10 +50,14 @@ class Users {
 
         let userPermissions = [];
 
-        if (this.userData.Groups) {
-            this.userData.Groups.forEach(group => {
-                if (group.Permissions) {
-                    group.Permissions.forEach(permission => {
+
+        if (this.userData.Groups || this.userData.groups) {
+            const groups = this.userData.Groups || this.userData.groups;
+
+            groups.forEach(group => {
+                if (group.Permissions || group.permissions) {
+                    const permissions = group.Permissions || group.permissions;
+                    permissions.forEach(permission => {
                         userPermissions.push(permission.name);
                     });
                 }
@@ -62,12 +68,16 @@ class Users {
             const [domain, action] = perm.split('.');
             return userPermissions.some(userPerm => {
                 const [userDomain, userAction] = userPerm.split('.');
-                return (userDomain === domain && (userAction === '*' || userAction === action)) || userPerm === perm;
+                return (
+                    (userDomain === domain && (userAction === '*' || userAction === action)) ||
+                    userPerm === perm
+                );
             });
         };
 
         return requiredPermissions.some(perm => hasWildcardPermission(perm));
     }
+
 
     async getGroups() {
         if (!this.userData) {

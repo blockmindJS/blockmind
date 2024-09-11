@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const groupSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     permissions: [{
         type: mongoose.Schema.Types.ObjectId,

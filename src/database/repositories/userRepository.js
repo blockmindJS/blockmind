@@ -5,6 +5,8 @@ class UserRepository extends IUserRepository {
     constructor(dbType) {
         super();
         this.dbType = dbType;
+        console.log('UserRepository constructor');
+        console.log(dbType);
         this.models = null;
     }
 
@@ -50,6 +52,7 @@ class UserRepository extends IUserRepository {
 
                 console.log(`User created in SQLite with groups: ${groupNames.join(', ')}`);
             } else if (this.dbType === 'mongodb') {
+                console.log('create user for mongodb');
                 userGroups = await this.models.Group.find({ name: { $in: groupNames } }).populate('permissions');
                 if (!userGroups || userGroups.length === 0) {
                     throw new Error('No groups found in MongoDB.');
@@ -77,7 +80,10 @@ class UserRepository extends IUserRepository {
     }
 
     async getUserByUsername(username) {
+
         await this.ensureModelsInitialized();
+        console.log('=============')
+        console.log(this.dbType)
 
         let user;
         if (this.dbType === 'sqlite') {
