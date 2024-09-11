@@ -48,11 +48,15 @@ class Users {
 
         let userPermissions = [];
 
-        this.userData.Groups.forEach(group => {
-            group.Permissions.forEach(permission => {
-                userPermissions.push(permission.name);
+        if (this.userData.Groups) {
+            this.userData.Groups.forEach(group => {
+                if (group.Permissions) {
+                    group.Permissions.forEach(permission => {
+                        userPermissions.push(permission.name);
+                    });
+                }
             });
-        });
+        }
 
         const hasWildcardPermission = (perm) => {
             const [domain, action] = perm.split('.');
@@ -65,13 +69,6 @@ class Users {
         return requiredPermissions.some(perm => hasWildcardPermission(perm));
     }
 
-
-
-
-    /**
-     * Возвращает группы пользователя.
-     * @returns {Promise<Array>} - Список групп пользователя.
-     */
     async getGroups() {
         if (!this.userData) {
             throw new Error(`User data is not loaded for ${this.username}`);

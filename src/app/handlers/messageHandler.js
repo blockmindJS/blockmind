@@ -54,8 +54,8 @@ async function commandHandler(bot, type, nick, message) {
 
     console.log(`Executing command: ${commandName}`);
 
-    const user = new Users(nick);
-    await user.init();
+    let user = new Users(nick);
+    user = await user.init();
 
     await command.execute(bot, type, user, args);
 }

@@ -28,7 +28,10 @@ class UserRepository extends IUserRepository {
 
             let userGroups;
             if (this.dbType === 'sqlite') {
-                userGroups = await this.models.Group.findAll({ where: { name: groupNames } });
+                userGroups = await this.models.Group.findAll({
+                    where: { name: groupNames },
+                    include: [{ model: this.models.Permission }]
+                });
                 if (!userGroups || userGroups.length === 0) {
                     throw new Error('No groups found in SQLite.');
                 }
@@ -37,9 +40,17 @@ class UserRepository extends IUserRepository {
 
                 await user.setGroups(userGroups);
 
+                user = await this.models.User.findOne({
+                    where: { username: userData.username },
+                    include: [{
+                        model: this.models.Group,
+                        include: [{ model: this.models.Permission }]
+                    }]
+                });
+
                 console.log(`User created in SQLite with groups: ${groupNames.join(', ')}`);
             } else if (this.dbType === 'mongodb') {
-                userGroups = await this.models.Group.find({ name: { $in: groupNames } });
+                userGroups = await this.models.Group.find({ name: { $in: groupNames } }).populate('permissions');
                 if (!userGroups || userGroups.length === 0) {
                     throw new Error('No groups found in MongoDB.');
                 }
@@ -49,6 +60,11 @@ class UserRepository extends IUserRepository {
                     groups: userGroups.map(group => group._id)
                 });
                 await user.save();
+
+                user = await this.models.User.findOne({ username: userData.username }).populate({
+                    path: 'groups',
+                    populate: { path: 'permissions' }
+                });
 
                 console.log(`User created in MongoDB with groups: ${groupNames.join(', ')}`);
             }
@@ -87,9 +103,6 @@ class UserRepository extends IUserRepository {
         console.log(`Пользователь ${username} не найден, создаем нового`);
         return await this.createUser({ username });
     }
-
-
-
 
 
 
