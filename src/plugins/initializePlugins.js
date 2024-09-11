@@ -11,7 +11,7 @@ async function backupPluginFolder(localPath) {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const archiveDir = path.join(localPath, '..', 'archive');
         const backupPath = path.join(archiveDir, `${pluginName}_${timestamp}`);
-        
+
         fs.mkdir(archiveDir, { recursive: true }, (mkdirErr) => {
             if (mkdirErr) {
                 console.error(`Error when creating archive folder: ${mkdirErr.message}`);
