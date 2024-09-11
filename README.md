@@ -149,7 +149,7 @@ module.exports = TestCommand;
 
 | Плагин   | Описание                                                                                  | Репозиторий                                                                                                      |
 |----------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `auth`   | Плагин для авторизации на популярных серверах, таких как Mineblaze, Cheatmine, Masedworld  | [github.com/mmeerrkkaa/examplePlugins](https://github.com/mmeerrkkaa/examplePlugins)                              |
+| `auth`   | Плагин для автоматической авторизации и захода на нужный портал у популярных серверах, таких как Mineblaze, Cheatmine, Masedworld  | [github.com/mmeerrkkaa/examplePlugins](https://github.com/mmeerrkkaa/examplePlugins)                              |
 
 
 
