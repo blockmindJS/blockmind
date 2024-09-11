@@ -36,10 +36,13 @@ async function createBot(botOptions) {
 
     const bot = /** @type {BotInstance} */ (mineflayer.createBot(botOptions));
 
+    Object.keys(botOptions).forEach((key) => { // shit
+        bot[key] = botOptions[key];
+    });
+
     await initializeDatabase(botOptions);
 
     bot.COMMAND_PREFIX = botOptions.COMMAND_PREFIX || '@';
-    bot.MC_SERVER = botOptions.MC_SERVER || 1;
     bot.pluginsAutoUpdate = botOptions.pluginsAutoUpdate || false;
     bot.allowedAutoUpdateRepos = botOptions.allowedAutoUpdateRepos || [];
 

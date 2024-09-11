@@ -3,12 +3,43 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 /**
+ * Удаляет локальные изменения для package.json перед обновлением
+ */
+async function removeLocalChangesForPackageJson(localPath) {
+    return new Promise((resolve, reject) => {
+        exec(`git -C ${localPath} reset HEAD package.json && git -C ${localPath} checkout -- package.json`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error resetting package.json: ${stderr}`);
+                reject(error);
+            } else {
+                console.log('Local changes for package.json discarded');
+                resolve();
+            }
+        });
+    });
+}
+
+/**
+ * Обновляет плагин с удалением изменений в package.json
+ */
+async function updatePluginWithPackageReset(repoUrl, localPath) {
+    await removeLocalChangesForPackageJson(localPath);
+
+    return new Promise((resolve, reject) => {
+        exec(`git -C ${localPath} pull`, (pullError, stdout, stderr) => {
+            if (pullError) {
+                console.error(`Error updating plugin: ${stderr}`);
+                reject(pullError);
+            } else {
+                console.log(`Plugin updated successfully from ${repoUrl}`);
+                resolve();
+            }
+        });
+    });
+}
+
+/**
  * Клонирование или обновление репозитория с GitHub
- * @param {string} repoUrl - URL репозитория GitHub
- * @param {string} localPath - Локальный путь для сохранения плагина
- * @param {boolean} autoUpdate - Включено ли автообновление
- * @param {Array<string>} allowedAutoUpdateUrls - Список разрешенных для автообновления URL
- * @returns {Promise<void>}
  */
 async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls) {
     const isAllowed = autoUpdate || allowedAutoUpdateUrls.includes(repoUrl);
@@ -17,37 +48,8 @@ async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAu
         console.log(`Plugin directory does not exist. Cloning from ${repoUrl}`);
         await cloneRepository(repoUrl, localPath);
     } else if (isAllowed) {
-        await new Promise((resolve, reject) => {
-            exec(`git -C ${localPath} fetch`, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`Error fetching repository updates: ${stderr}`);
-                    reject(error);
-                } else {
-                    exec(`git -C ${localPath} diff --name-only origin/main`, (err, changes) => {
-                        if (err) {
-                            console.error(`Error checking for changes: ${err}`);
-                            reject(err);
-                        } else if (changes) {
-                            console.log(`Changes detected in plugin at ${repoUrl}: ${changes}`);
-                            exec(`git -C ${localPath} pull`, (pullError, pullStdout, pullStderr) => {
-                                if (pullError) {
-                                    console.error(`Error updating plugin: ${pullStderr}`);
-                                    reject(pullError);
-                                } else {
-                                    console.log(`Plugin updated successfully from ${repoUrl}`);
-                                    resolve();
-                                }
-                            });
-                        } else {
-                            console.log(`No updates found for plugin at ${repoUrl}`);
-                            resolve();
-                        }
-                    });
-                }
-            });
-        });
+        await checkForPluginUpdates(repoUrl, localPath);
     } else {
-        // Если автообновление не разрешено
         console.log(`Plugin update available for ${repoUrl}, but it is not in the allowed list for auto-updates.`);
         console.log(`To update manually, run: git -C ${localPath} pull`);
     }
@@ -55,8 +57,6 @@ async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAu
 
 /**
  * Проверка наличия обновлений для плагина
- * @param {string} repoUrl - URL репозитория GitHub
- * @param {string} localPath - Локальный путь для сохранения плагина
  */
 async function checkForPluginUpdates(repoUrl, localPath) {
     return new Promise((resolve, reject) => {
@@ -65,14 +65,14 @@ async function checkForPluginUpdates(repoUrl, localPath) {
                 console.error(`Error fetching repository updates: ${stderr}`);
                 reject(error);
             } else {
-                exec(`git -C ${localPath} diff --name-only origin/main`, (err, changes) => {
-                    if (err) {
-                        console.error(`Error checking for changes: ${err}`);
-                        reject(err);
+                exec(`git -C ${localPath} diff --name-only origin/main`, (diffError, changes) => {
+                    if (diffError) {
+                        console.error(`Error checking for changes: ${diffError}`);
+                        reject(diffError);
                     } else if (changes) {
-                        console.log(`Plugin update available for ${repoUrl}: ${changes}`);
-                        console.log(`To update manually, run: git -C ${localPath} pull`);
-                        resolve();
+                        console.log(`Changes detected in plugin at ${repoUrl}: ${changes}`);
+                        // Обновляем с сбросом package.json
+                        updatePluginWithPackageReset(repoUrl, localPath).then(resolve).catch(reject);
                     } else {
                         console.log(`No updates found for plugin at ${repoUrl}`);
                         resolve();
@@ -85,9 +85,6 @@ async function checkForPluginUpdates(repoUrl, localPath) {
 
 /**
  * Клонирование репозитория
- * @param {string} repoUrl - URL репозитория GitHub
- * @param {string} localPath - Локальный путь для сохранения плагина
- * @returns {Promise<void>}
  */
 async function cloneRepository(repoUrl, localPath) {
     return new Promise((resolve, reject) => {
@@ -105,11 +102,6 @@ async function cloneRepository(repoUrl, localPath) {
 
 /**
  * Загрузка плагина с GitHub
- * @param {string} repoUrl - URL репозитория GitHub
- * @param {string} localPath - Локальный путь для сохранения плагина
- * @param {boolean} autoUpdate - Включено ли автообновление
- * @param {Array<string>} allowedAutoUpdateUrls - Список разрешенных для автообновления URL
- * @returns {Promise<Function>} - Возвращает класс плагина
  */
 async function loadPluginFromGithub(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls) {
     await cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls);
@@ -118,10 +110,6 @@ async function loadPluginFromGithub(repoUrl, localPath, autoUpdate, allowedAutoU
 
 /**
  * Инициализация плагинов
- * @param {Object} bot - Инстанс бота
- * @param {Array<Object>} plugins - Список конфигураций плагинов
- * @param {boolean} pluginsAutoUpdate - Автообновление плагинов
- * @param {Array<string>} allowedAutoUpdateUrls - Разрешенные для автообновления URL репозиториев
  */
 async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
     const loadedPlugins = [];
