@@ -7,7 +7,6 @@ class Command {
      * @property {number} [argsCount=0] - Количество аргументов, необходимых для выполнения команды.
      * @property {string} [permissions=''] - Необходимые права для выполнения команды.
      * @property {string[]} [allowedChatTypes=[]] - Разрешённые типы чатов для выполнения команды.
-     * @property {number} [requirementTime=0] - Время в миллисекундах для выполнения команды.
      * @property {number} [cooldown=0] - Задержка перед повторным выполнением команды (в миллисекундах).
      * @property {string[]} [variations=[]] - Возможные вариации команды.
      * @property {boolean} [isActive=true] - Статус активности команды.
@@ -17,7 +16,7 @@ class Command {
      * Создаёт экземпляр команды.
      * @param {CommandOptions} options - Настройки команды.
      */
-    constructor({ name, argsCount = 0, permissions = '', allowedChatTypes = [], requirementTime = 0, cooldown = 0, variations = [], isActive = true } = {}) {
+    constructor({ name, argsCount = 0, permissions = '', allowedChatTypes = [], cooldown = 0, variations = [], isActive = true } = {}) {
         /** @type {string} */
         this.name = name;
 
@@ -29,9 +28,6 @@ class Command {
 
         /** @type {string[]} */
         this.allowedChatTypes = allowedChatTypes;
-
-        /** @type {number} */
-        this.requirementTime = requirementTime;
 
         /** @type {number} */
         this.cooldown = cooldown;
@@ -72,10 +68,6 @@ class Command {
             return this.onBlacklisted(bot, typeChat, user.username);
         }
 
-        if (!await this.checkAdditionalRequirements(user.username)) {
-            return this.onAdditionalRequirementsNotMet(bot, typeChat, user.username);
-        }
-
         if (!this.isActive) {
             return this.onCommandNotActive(bot, typeChat, user.username);
         }
@@ -85,14 +77,6 @@ class Command {
         } catch (error) {
             this.onError(bot, typeChat, user.username, error);
         }
-    }
-
-    /**
-     * Проверяет дополнительные требования для выполнения команды.
-     * @returns {Promise<boolean>}
-     */
-    async checkAdditionalRequirements() {
-        return true; // Заглушка
     }
 
     /**
@@ -125,15 +109,6 @@ class Command {
         bot.sendMessage(typeChat, `У вас нет прав для выполнения команды ${this.name}`, username);
     }
 
-    /**
-     * Обрабатывает ошибку при дополнительных требованиях.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
-     */
-    onAdditionalRequirementsNotMet(bot, typeChat, username) {
-        bot.sendMessage(typeChat, `Вы не удовлетворяете дополнительным требованиям для выполнения команды ${this.name}`, username);
-    }
 
     /**
      * Обрабатывает ошибку выполнения команды.
@@ -163,7 +138,7 @@ class Command {
      * @param {string} username - Имя пользователя.
      */
     onBlacklisted(bot, typeChat, username) {
-        bot.sendMessage(typeChat, `Вы заблокированы и не можете использовать команды.`, username);
+        //
     }
 
     /**
