@@ -19,7 +19,9 @@ const { initializePlugins } = require('./plugins/initializePlugins');  // Ини
  *   MC_SERVER: number,
  *   sendMessage(chatType: string, message: string, username?: string, delay?: number): void,
  *   getRepository(repositoryType: string): any,
- *   plugins: Object[]
+ *   plugins: Object[],
+ *   pluginsAutoUpdate: boolean,
+ *   allowedAutoUpdateUrls: string[]
  * }} BotInstance
  */
 
@@ -38,6 +40,8 @@ async function createBot(botOptions) {
 
     bot.COMMAND_PREFIX = botOptions.COMMAND_PREFIX || '@';
     bot.MC_SERVER = botOptions.MC_SERVER || 1;
+    bot.pluginsAutoUpdate = botOptions.pluginsAutoUpdate || false;
+    bot.allowedAutoUpdateRepos = botOptions.allowedAutoUpdateRepos || [];
 
     bot.getRepository = function (repositoryType) {
         return RepositoryFactory.getRepository(repositoryType);
@@ -70,7 +74,7 @@ async function createBot(botOptions) {
     };
 
     if (botOptions.plugins) {
-        bot.plugins = await initializePlugins(bot, botOptions.plugins);
+        bot.plugins = await initializePlugins(bot, botOptions.plugins, botOptions.pluginsAutoUpdate, botOptions.allowedAutoUpdateRepos);
     }
 
     return bot;
