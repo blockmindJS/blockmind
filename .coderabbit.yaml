@@ -1,4 +1,4 @@
-language: ru-RU
+language: 'en'
 tone_instructions: ''
 early_access: false
 enable_free_tier: true
