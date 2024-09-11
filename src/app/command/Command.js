@@ -3,18 +3,18 @@ const UserService = require('../../database/services/userService');
 class Command {
     /**
      * @typedef {Object} CommandOptions
-     * @property {string} name - Название команды.
-     * @property {number} [argsCount=0] - Количество аргументов, необходимых для выполнения команды.
-     * @property {string} [permissions=''] - Необходимые права для выполнения команды.
-     * @property {string[]} [allowedChatTypes=[]] - Разрешённые типы чатов для выполнения команды.
-     * @property {number} [cooldown=0] - Задержка перед повторным выполнением команды (в миллисекундах).
-     * @property {string[]} [variations=[]] - Возможные вариации команды.
-     * @property {boolean} [isActive=true] - Статус активности команды.
+     * @property {string} name - Name of the command.
+     * @property {number} [argsCount=0] - The number of arguments required to execute the command.
+     * @property {string} [permissions=''] - Necessary rights to execute the command.
+     * @property {string[]} [allowedChatTypes=[]] - Allowed chat types to execute the command.
+     * @property {number} [cooldown=0] - The delay before the command is executed again (in milliseconds).
+     * @property {string[]} [variations=[]] - Possible variations of the command.
+     * @property {boolean} [isActive=true] - Is the command on.
      */
 
     /**
-     * Создаёт экземпляр команды.
-     * @param {CommandOptions} options - Настройки команды.
+     * Creates an instance of the command.
+     * @param {CommandOptions} options
      */
     constructor({ name, argsCount = 0, permissions = '', allowedChatTypes = [], cooldown = 0, variations = [], isActive = true } = {}) {
         /** @type {string} */
@@ -40,11 +40,11 @@ class Command {
     }
 
     /**
-     * Выполняет команду.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата (например, 'global', 'local').
-     * @param {Object} user - Объект пользователя.
-     * @param {string[]} args - Аргументы, переданные в команду.
+     * Executes the command.
+     * @param {Object} bot.
+     * @param {string} typeChat - The type of chat (e.g. 'global', 'local', 'clan').
+     * @param {Object} user
+     * @param {string[]} args
      * @returns {Promise<void>}
      */
     async execute(bot, typeChat, user, args) {
@@ -80,30 +80,30 @@ class Command {
     }
 
     /**
-     * Обрабатывает ошибку при недостатке аргументов.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
+     * Handles an error if there are insufficient arguments.
+     * @param {Object} bot.
+     * @param {string} typeChat - Type of chat (e.g., 'global', 'local', 'clan'').
+     * @param {string} username
      */
     onInvalidArguments(bot, typeChat, username) {
         bot.sendMessage(typeChat, `Недостаточно параметров для команды ${this.name}`, username);
     }
 
     /**
-     * Обрабатывает ошибку при неправильном типе чата.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
+     * Handles an error if the chat type is incorrect.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
      */
     onInvalidChatType(bot, typeChat, username) {
         bot.sendMessage(typeChat, `Команда ${this.name} не поддерживается в данном чате`, username);
     }
 
     /**
-     * Обрабатывает ошибку при недостатке прав.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
+     * Handles an error when there are insufficient permissions.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
      */
     onInsufficientPermissions(bot, typeChat, username) {
         bot.sendMessage(typeChat, `У вас нет прав для выполнения команды ${this.name}`, username);
@@ -111,43 +111,43 @@ class Command {
 
 
     /**
-     * Обрабатывает ошибку выполнения команды.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
-     * @param {Error} error - Ошибка.
+     * Handles a command execution error.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
+     * @param {Error} error
      */
     onError(bot, typeChat, username, error) {
         bot.sendMessage(typeChat, `Ошибка при выполнении команды ${this.name}: ${error.message}`, username);
     }
 
     /**
-     * Обрабатывает отключение команды.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
+     * Handling an inactive command.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
      */
     onCommandNotActive(bot, typeChat, username) {
         bot.sendMessage(typeChat, `Команда ${this.name} не активна`, username);
     }
 
     /**
-     * Обрабатывает ошибку при блокировке пользователя.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {string} username - Имя пользователя.
+     * Handles an error when a user is locked out.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
      */
     onBlacklisted(bot, typeChat, username) {
         //
     }
 
     /**
-     * Основная логика команды. Этот метод должен быть переопределён в дочерних классах.
-     * @param {Object} bot - Экземпляр бота.
-     * @param {string} typeChat - Тип чата.
-     * @param {Object} user - Объект пользователя.
-     * @param {...string[]} args - Аргументы команды.
-     * @throws {Error} Если метод не переопределён.
+     * Basic command logic. This method must be overridden in child classes.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {Object} user
+     * @param {...string[]} args
+     * @throws {Error}
      */
     async handler(bot, typeChat, user, ...args) {
         throw new Error(`Handler not implemented for command ${this.name}`);
