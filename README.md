@@ -39,13 +39,12 @@ const botOptions = {
     dbType: 'sqlite',
     version: '1.20.1',
     MC_SERVER: 1,
-    COMMAND_PREFIX: '@',
-    customModels: {
+    customModels: { // Кастомные модели если будут
         sqlite: {
             CustomModel: require('./database/models/custom/customModelSQLite')
         }
     },
-    customRepositories: {
+    customRepositories: { // Кастомные управляторы если будут
         custom: CustomRepository
     },
 
@@ -57,6 +56,7 @@ const botOptions = {
     },
 
     pluginsAutoUpdate: true,
+    allowedAutoUpdateRepos: [] , // Доверенные репозитории которые автоматически будут обновлятся, если pluginsAutoUpdate = false
 
     plugins: [
         { type: 'github', repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins', localPath: './plugins/CustomAuthPlugin' }
