@@ -1,5 +1,5 @@
 //const { processChatMessage } = require('../handlers/MessageHandler');
-const {processChatMessage} = require("../handlers/messageHandler");
+const {processChatMessage} = require("../handlers/commandHandler");
 
 
 function registerEventHandlers(bot, commandsRegistry) {

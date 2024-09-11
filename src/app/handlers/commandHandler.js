@@ -2,7 +2,6 @@
 const { parseArguments } = require('../utils/parseArguments');
 const winston = require('winston');
 const { parseMessage } = require('../utils/parse');
-const UserService = require("../../database/services/userService");
 const Users = require("../../database/repositories/Users");
 
 const logger = winston.createLogger({
@@ -21,7 +20,6 @@ const logger = winston.createLogger({
 async function processChatMessage(bot, jsonMsg) {
     const messageText = jsonMsg.toString();
     console.log(` ${messageText}`);
-    const COMMAND_PREFIX = bot.COMMAND_PREFIX || '@';
 
     try {
         const parsedMessage = await parseMessage(bot, messageText, jsonMsg);
@@ -49,7 +47,7 @@ async function commandHandler(bot, type, nick, message) {
 
     const command = bot.commandsRegistry[commandName];
     if (!command) {
-        console.log(`Команда ${commandName} не найдена. Доступные команды: ${Object.keys(bot.commandsRegistry).join(', ')}`);
+        console.log(`Command ${commandName} not found.`);
         return;
     }
 
