@@ -34,11 +34,10 @@ https://github.com/mmeerrkkaa/blockmind-example
 
 ```javascript
 const botOptions = {
-    host: 'mc.masedworld.net', 
-    username: '',
+    host: 'mc.masedworld.net', // localhost 
+    username: 'username',
     dbType: 'sqlite',
     version: '1.20.1',
-    password: "123456789",
     MC_SERVER: 1,
     COMMAND_PREFIX: '@',
     customModels: {
@@ -50,7 +49,7 @@ const botOptions = {
         custom: CustomRepository
     },
 
-    delayConfig: {
+    delayConfig: { // Задержа перед отправкой в чат
         local: 444,
         global: 5000,
         clan: 350,
@@ -132,7 +131,7 @@ module.exports = TestCommand;
 
 ## 👤 Методы объекта User
 
-- **`blacklist`** (геттер/сеттер): Получает или устанавливает статус в черном списке пользователя.
+- **`blacklist`** (геттер/сеттер): Получает или устанавливает статус о черном списке пользователя(Невозможно взаимодейсовать с ботом
 
 - **`hasPermission(requiredPermissions)`**: Проверяет наличие у пользователя указанных разрешений. Принимает строку или массив разрешений и возвращает `true`/`false`.
 
