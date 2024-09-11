@@ -15,7 +15,6 @@ function getSQLiteConnection() {
         sequelizeInstance = new Sequelize({
             dialect: 'sqlite',
             storage: config.sqlite?.storage || path.resolve(process.cwd(), './sqlite.db'),
-            logging: console.log,
         });
 
         sequelizeInstance.authenticate()

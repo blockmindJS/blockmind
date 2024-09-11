@@ -1,4 +1,3 @@
-// src/botCreator.js
 const mineflayer = require('mineflayer');
 const { getQueueInstance, initializeMessageQueue } = require("./app/queue/messageQueueSingleton");
 const loadCommands = require("./app/command/commandRegistry");
@@ -6,7 +5,13 @@ const { registerEventHandlers } = require("./app/events/eventHandlers");
 const initializeDatabase = require("./database/dbInitializer");
 const { setConfig } = require("./config/config");
 const RepositoryFactory = require('./database/repositories/repositoryFactory');
-const {commandsRegistry} = require("./index");
+const { commandsRegistry } = require("./index");
+const simpleGit = require('simple-git');
+const path = require('path');
+const fs = require('fs');
+const { exec } = require('child_process');
+const {initializePlugins} = require("./plugins/initializePlugins");
+
 
 /**
  * @typedef {import('mineflayer').Bot} MineflayerBot
@@ -22,6 +27,7 @@ const {commandsRegistry} = require("./index");
  * }} BotInstance
  */
 
+
 /**
  * Creates and initializes the bot.
  * @param {Object} botOptions - The bot configuration options.
@@ -33,19 +39,16 @@ async function createBot(botOptions) {
 
     const bot = /** @type {BotInstance} */ (mineflayer.createBot(botOptions));
 
-
     await initializeDatabase(botOptions);
 
     bot.COMMAND_PREFIX = botOptions.COMMAND_PREFIX || '@';
     bot.MC_SERVER = botOptions.MC_SERVER || 1;
-
 
     bot.getRepository = function (repositoryType) {
         return RepositoryFactory.getRepository(repositoryType);
     };
 
     bot.commandsRegistry = await loadCommands();
-
 
     initializeMessageQueue(bot);
 
@@ -55,14 +58,25 @@ async function createBot(botOptions) {
 
     /**
      * Sends a message to the chat queue.
-     * @param {string} chatType - The type of chat (e.g., 'global', 'private', 'local', 'clan'),.
+     * @param {string} chatType - The type of chat (e.g., 'global', 'private', 'local', 'clan').
      * @param {string} message - The message to send.
      * @param {string} [username=''] - The username for private messages (optional).
      * @param {number} [delay=50] - The delay between messages in milliseconds (optional).
+     * delayConfig: {
+     *         local: 4000,
+     *         global: 4000,
+     *         clan: 350,
+     *         private: 4000
+     *     }
      */
     bot.sendMessage = function (chatType, message, username = '', delay = 50) {
-        getQueueInstance().enqueueMessage(chatType, message, username, delay);
+        const delayConfig = botOptions.delayConfig || {};
+        getQueueInstance().enqueueMessage(chatType, message, username, delayConfig);
     };
+
+    if (botOptions.plugins) {
+        await initializePlugins(bot, botOptions.plugins);
+    }
 
     return bot;
 }

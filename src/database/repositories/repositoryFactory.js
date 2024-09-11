@@ -1,6 +1,7 @@
 const { getConfig } = require("../../config/config");
 const UserRepository = require('./userRepository');
 const ClanMemberRepository = require('./clanMemberRepository');
+const permissionRepository = require("./permissionRepository");
 
 class RepositoryFactory {
     static getRepository(repositoryType) {
@@ -10,11 +11,10 @@ class RepositoryFactory {
             return new config.customRepositories[repositoryType](config.dbType);
         }
 
-        console.log(`config: ${JSON.stringify(config)}`);
-
         const repoMap = {
             user: () => new UserRepository(config.dbType),
             clanMember: () => new ClanMemberRepository(config.dbType),
+            permission: () => new permissionRepository(config.dbType),
         };
 
         if (repoMap[repositoryType]) {

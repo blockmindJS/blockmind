@@ -48,7 +48,7 @@ class MessageQueue {
 
     /**
      * Sends a message to the specified chat type.
-     * @param {string} chatType - The type of chat (e.g., 'command', 'global', 'local').
+     * @param {string} chatType - The type of chat (e.g., 'command', 'global', 'local', 'private', 'clan').
      * @param {string|string[]} messages - The message or an array of messages to send.
      * @param {string} [username] - The username (optional for private messages).
      * @param {number} delay - The delay between messages.
@@ -94,10 +94,11 @@ class MessageQueue {
      * @param {string} chatType - The type of chat (e.g., 'command', 'global', 'local', 'private').
      * @param {string|string[]} messages - The message or an array of messages to enqueue.
      * @param {string} [username] - The username (optional for private messages).
-     * @param {number} [baseDelay=4000] - The base delay between messages.
+     * @param {Object} [delayConfig] - Optional configuration object for overriding delays for specific chat types.
      */
-    enqueueMessage(chatType, messages, username = '', baseDelay = 4000) {
-        const chatDelays = {
+    enqueueMessage(chatType, messages, username = '', delayConfig = {}) {
+        // Default chat delays
+        const defaultChatDelays = {
             local: 4000,
             global: 4000,
             clan: 355,
@@ -105,14 +106,17 @@ class MessageQueue {
             private: 4000
         };
 
-        const delay = chatDelays[chatType] || baseDelay;
+
+        const chatDelays = { ...defaultChatDelays, ...delayConfig };
+
+        const delay = chatDelays[chatType] || chatDelays.baseDelay || 4000;
         this.queue.push({ chatType, messages, username, delay });
-        console.log(`Enqueued message: ${messages}`);
 
         if (!this.isSending) {
             this.sendNextMessage();
         }
     }
+
 
     /**
      * Sends a command and waits for a matching reply from the bot's chat.

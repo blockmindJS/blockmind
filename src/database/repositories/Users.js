@@ -9,6 +9,9 @@ class Users {
 
     async init() {
         this.userData = await this.userRepository.getUserByUsername(this.username);
+        if (!this.userData) {
+            throw new Error(`User ${this.username} not found or could not be created.`);
+        }
         return this;
     }
 
@@ -24,11 +27,61 @@ class Users {
     }
 
     async _save() {
-        await this.userRepository.updateUser(this.userData);
+        if (this.userData) {
+            await this.userRepository.updateUser(this.userData);
+        }
     }
 
-    hasPermission(permission) {
-        return true;
+    /**
+     * Проверяет наличие у пользователя указанного разрешения.
+     * @param {string} permission - Проверяемое разрешение.
+     * @returns {Promise<boolean>}
+     */
+    async hasPermission(requiredPermissions) {
+        if (!this.userData) {
+            throw new Error(`User data is not loaded for ${this.username}`);
+        }
+
+        if (typeof requiredPermissions === 'string') {
+            requiredPermissions = requiredPermissions.split(',');
+        }
+
+        let userPermissions = [];
+
+        this.userData.Groups.forEach(group => {
+            group.Permissions.forEach(permission => {
+                userPermissions.push(permission.name);
+            });
+        });
+
+        const hasWildcardPermission = (perm) => {
+            const [domain, action] = perm.split('.');
+            return userPermissions.some(userPerm => {
+                const [userDomain, userAction] = userPerm.split('.');
+                return (userDomain === domain && (userAction === '*' || userAction === action)) || userPerm === perm;
+            });
+        };
+
+        return requiredPermissions.some(perm => hasWildcardPermission(perm));
+    }
+
+
+
+
+    /**
+     * Возвращает группы пользователя.
+     * @returns {Promise<Array>} - Список групп пользователя.
+     */
+    async getGroups() {
+        if (!this.userData) {
+            throw new Error(`User data is not loaded for ${this.username}`);
+        }
+
+        if (this.userRepository.dbType === 'sqlite') {
+            return await this.userData.getGroups();
+        } else if (this.userRepository.dbType === 'mongodb') {
+            return this.userData.groups;
+        }
     }
 
     async addGroup(groupName) {
@@ -40,7 +93,7 @@ class Users {
             console.log(`Group ${groupName} not found.`);
         }
     }
-    
+
     async removeGroup(groupName) {
         const group = await this.userRepository.models.Group.findOne({ where: { name: groupName } });
         if (group) {

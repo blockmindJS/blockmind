@@ -37,7 +37,6 @@ async function processChatMessage(bot, jsonMsg) {
 
 async function commandHandler(bot, type, nick, message) {
     const COMMAND_PREFIX = bot.COMMAND_PREFIX || '@';
-    console.log(message);
     if (!message.startsWith(COMMAND_PREFIX)) {
         return;
     }
@@ -56,6 +55,7 @@ async function commandHandler(bot, type, nick, message) {
     console.log(`Executing command: ${commandName}`);
 
     const user = new Users(nick);
+    await user.init();
 
     await command.execute(bot, type, user, args);
 }

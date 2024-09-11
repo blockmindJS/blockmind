@@ -10,7 +10,6 @@ class UserRepository extends IUserRepository {
 
     async initialize() {
         const models = await getModels();
-        console.log('Loaded models:', models);
         this.models = models;
 
         if (!this.models || !this.models.User) {
@@ -61,17 +60,23 @@ class UserRepository extends IUserRepository {
         return user;
     }
 
-
-
-
     async getUserByUsername(username) {
         await this.ensureModelsInitialized();
 
         let user;
         if (this.dbType === 'sqlite') {
-            user = await this.models.User.findOne({ where: { username } });
+            user = await this.models.User.findOne({
+                where: { username },
+                include: [{
+                    model: this.models.Group,
+                    include: [{ model: this.models.Permission }]
+                }]
+            });
         } else if (this.dbType === 'mongodb') {
-            user = await this.models.User.findOne({ username });
+            user = await this.models.User.findOne({ username }).populate({
+                path: 'groups',
+                populate: { path: 'permissions' }
+            });
         }
 
         if (user) {
@@ -82,6 +87,11 @@ class UserRepository extends IUserRepository {
         console.log(`Пользователь ${username} не найден, создаем нового`);
         return await this.createUser({ username });
     }
+
+
+
+
+
 
     async updateUser(userData) {
         await this.ensureModelsInitialized();
