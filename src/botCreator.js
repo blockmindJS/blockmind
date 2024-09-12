@@ -6,7 +6,7 @@ const initializeDatabase = require("./database/dbInitializer");
 const { setConfig } = require("./config/config");
 const RepositoryFactory = require('./database/repositories/repositoryFactory');
 const { commandsRegistry } = require("./index");
-const { initializePlugins } = require('./plugins/initializePlugins');  // Инициализация плагинов
+const { initializePlugins } = require('./plugins/initializePlugins');
 
 /**
  * @typedef {import('mineflayer').Bot} MineflayerBot
@@ -52,6 +52,9 @@ async function createBot(botOptions) {
 
     bot.commandsRegistry = await loadCommands();
 
+    bot.messageQueue = initializeMessageQueue(bot, botOptions.delayConfig);
+
+
     initializeMessageQueue(bot);
 
     if (botOptions.host === "mc.masedworld.net" || botOptions.host === "mc.mineblaze.net" || botOptions.host === "mc.cheatmine.net") {
@@ -72,9 +75,12 @@ async function createBot(botOptions) {
      *     }
      */
     bot.sendMessage = function (chatType, message, username = '', delay = 50) {
-        const delayConfig = botOptions.delayConfig || {};
-        getQueueInstance().enqueueMessage(chatType, message, username, delayConfig);
+        // Используем задержку из chatTypes, а не из botOptions.delayConfig
+        const messageQueue = getQueueInstance();
+        const delayConfig = messageQueue.chatTypes[chatType].delay || delay;
+        messageQueue.enqueueMessage(chatType, message, username, { [chatType]: delayConfig });
     };
+
 
     if (botOptions.plugins) {
         bot.plugins = await initializePlugins(bot, botOptions.plugins, botOptions.pluginsAutoUpdate, botOptions.allowedAutoUpdateRepos);

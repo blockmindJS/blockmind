@@ -1,9 +1,9 @@
 const MessageQueue = require('./MessageQueue');
 let messageQueue = null;
 
-function initializeMessageQueue(bot) {
+function initializeMessageQueue(bot, delayConfig = {}) {
     if (!messageQueue) {
-        messageQueue = new MessageQueue(bot);
+        messageQueue = new MessageQueue(bot, delayConfig);
     }
     return messageQueue;
 }
