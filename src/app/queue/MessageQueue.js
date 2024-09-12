@@ -1,17 +1,29 @@
-/**
- * Class representing a message queue for bot messages.
- */
 class MessageQueue {
     /**
      * Creates a new MessageQueue instance.
      * @param {Object} bot - The bot instance to send messages with.
+     * @param {Object} delayConfig - Optional configuration object for overriding delays for specific chat types.
      */
-    constructor(bot) {
+    constructor(bot, delayConfig = {}) {
         this.bot = bot;
         this.queue = [];
         this.isSending = false;
         this.responseListeners = new Map();
         this.lastSendTime = Date.now();
+        this.chatTypes = {
+            command: { prefix: '', delay: 400 },
+            global: { prefix: '!', delay: 4000 },
+            local: { prefix: '', delay: 4000 },
+            private: { prefix: '/msg ', delay: 4000 },
+            clan: { prefix: '/cc ', delay: 355 }
+        };
+
+
+        for (const chatType in delayConfig) {
+            if (this.chatTypes[chatType]) {
+                this.chatTypes[chatType].delay = delayConfig[chatType];
+            }
+        }
     }
 
     /**
@@ -37,7 +49,7 @@ class MessageQueue {
         try {
             await this.sendMessage(chatType, messages, username, delay);
         } catch (error) {
-            console.error('Ошибка при отправке сообщения:', error);
+            console.error('Error when sending a message:', error);
         } finally {
             this.isSending = false;
             if (this.queue.length > 0) {
@@ -58,33 +70,22 @@ class MessageQueue {
         if (typeof messages === 'string') {
             messages = [messages];
         } else if (!Array.isArray(messages)) {
-            console.error('MessageQueue: Неверный тип сообщения:', messages);
+            console.error('MessageQueue: Incorrect message type:', messages);
             return;
         }
 
-        for (const message of messages) {
-            console.log(`Sending message ${username} of type ${chatType}: ${message}`);
+        const chatConfig = this.chatTypes[chatType];
+        if (!chatConfig) {
+            console.error(`Unknown chat type: ${chatType}`);
+            return;
+        }
 
-            switch (chatType) {
-                case 'command':
-                    await this.bot.chat(message);
-                    break;
-                case 'global':
-                    await this.bot.chat("!" + message);
-                    break;
-                case 'local':
-                    await this.bot.chat(message);
-                    break;
-                case 'private':
-                    await this.bot.chat(`/msg ${username} ${message}`);
-                    break;
-                case 'clan':
-                    await this.bot.chat(`/cc ${message}`);
-                    break;
-                default:
-                    console.log('Неизвестный тип чата:', chatType);
-                    break;
-            }
+        const { prefix } = chatConfig;
+
+        for (const message of messages) {
+            const fullMessage = prefix + message;
+            console.log(`Sending message ${username} of type ${chatType}: ${fullMessage}`);
+            await this.bot.chat(fullMessage);
             await this.delay(delay);
         }
     }
@@ -97,23 +98,42 @@ class MessageQueue {
      * @param {Object} [delayConfig] - Optional configuration object for overriding delays for specific chat types.
      */
     enqueueMessage(chatType, messages, username = '', delayConfig = {}) {
-        // Default chat delays
-        const defaultChatDelays = {
-            local: 4000,
-            global: 4000,
-            clan: 355,
-            command: 400,
-            private: 4000
-        };
+        const chatConfig = this.chatTypes[chatType];
+        if (!chatConfig) {
+            console.error(`Unknown chat type: ${chatType}`);
+            return;
+        }
 
-
-        const chatDelays = { ...defaultChatDelays, ...delayConfig };
-
-        const delay = chatDelays[chatType] || chatDelays.baseDelay || 4000;
+        const delay = delayConfig[chatType] || chatConfig.delay;
         this.queue.push({ chatType, messages, username, delay });
 
         if (!this.isSending) {
             this.sendNextMessage();
+        }
+    }
+
+    /**
+     * Adds a new chat type.
+     * @param {string} chatType - The type of chat to add.
+     * @param {string} prefix - The prefix used for this chat type (e.g., '/p chat').
+     * @param {number} delay - The delay for this chat type.
+     */
+    addType(chatType, prefix, delay) {
+        this.chatTypes[chatType] = { prefix, delay };
+        console.log(`Added new chat type: ${chatType} with prefix "${prefix}" and delay ${delay}ms`);
+    }
+
+    /**
+     * Sets the delay for a specific chat type.
+     * @param {string} chatType - The type of chat (e.g., 'local', 'global').
+     * @param {number} delay - The new delay in milliseconds.
+     */
+    setDelay(chatType, delay) {
+        if (this.chatTypes[chatType]) {
+            this.chatTypes[chatType].delay = delay;
+            console.log(`Delay for chat ${chatType} is set to ${delay}ms`);
+        } else {
+            console.error(`Chat type ${chatType} not found`);
         }
     }
 
@@ -127,7 +147,6 @@ class MessageQueue {
      */
     sendMessageAndWaitForReply(commandToSend, responsePatterns, timeout) {
         return new Promise((resolve, reject) => {
-            console.log(`Отправляем команду: ${commandToSend}`);
 
             if (!Array.isArray(responsePatterns)) {
                 responsePatterns = [responsePatterns];
