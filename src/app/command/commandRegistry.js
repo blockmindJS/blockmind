@@ -98,16 +98,42 @@ async function loadCommands() {
 
     await loadCommandsFromDirectory(commandsDir);
 
+    const mainWatcher = chokidar.watch(commandsDir, { ignored: /^\./, persistent: true });
+    mainWatcher
+        .on('add', async (filePath) => {
+            console.log(`File added: ${filePath}`);
+            await loadCommand(filePath);
+        })
+        .on('change', async (filePath) => {
+            console.log(`File changed: ${filePath}`);
+            await loadCommand(filePath);
+        })
+        .on('unlink', async (filePath) => {
+            const commandNames = fileToCommandNameMap[filePath];
+            if (commandNames) {
+                commandNames.forEach(commandName => {
+                    delete commands[commandName];
+                });
+                delete fileToCommandNameMap[filePath];
+                logger.info(`Command ${commandNames.join(', ')} deleted due to file deletion.`);
+            }
+        })
+        .on('error', error => logger.error(`Observer error for the main directory: ${error.message}`));
+
     const pluginCommandDirs = await loadPluginCommandDirectories();
 
     for (const pluginCommandDir of pluginCommandDirs) {
         console.log(`Loading plugin commands from directory: ${pluginCommandDir}`);
         await loadCommandsFromDirectory(pluginCommandDir);
 
-        const watcher = chokidar.watch(pluginCommandDir, { ignored: /^\./, persistent: true });
-        watcher
-            .on('add', loadCommand)
+        const pluginWatcher = chokidar.watch(pluginCommandDir, { ignored: /^\./, persistent: true });
+        pluginWatcher
+            .on('add', async (filePath) => {
+                console.log(`Plugin file added: ${filePath}`);
+                await loadCommand(filePath);
+            })
             .on('change', async (filePath) => {
+                console.log(`Plugin file changed: ${filePath}`);
                 await loadCommand(filePath);
             })
             .on('unlink', async (filePath) => {
@@ -117,17 +143,19 @@ async function loadCommands() {
                         delete commands[commandName];
                     });
                     delete fileToCommandNameMap[filePath];
-                    logger.info(`Команда ${commandNames.join(', ')} удалена из-за удаления файла.`);
+                    logger.info(`Command ${commandNames.join(', ')} deleted due to file deletion.`);
                 }
             })
-            .on('error', error => logger.error(`Ошибка наблюдателя: ${error.message}`));
+            .on('error', error => logger.error(`Observer error for plugins: ${error.message}`));
     }
 
     if (Object.keys(commands).length === 0) {
-        logger.warn('Нет доступных команд после загрузки.');
+        logger.warn('No commands available after booting.');
     }
 
     return commands;
 }
+
+
 
 module.exports = loadCommands;

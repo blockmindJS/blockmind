@@ -19,7 +19,6 @@ const logger = winston.createLogger({
 
 async function processChatMessage(bot, jsonMsg) {
     const messageText = jsonMsg.toString();
-    console.log(` ${messageText}`);
 
     try {
         const parsedMessage = await parseMessage(bot, messageText, jsonMsg);

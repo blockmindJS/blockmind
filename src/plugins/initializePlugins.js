@@ -3,6 +3,53 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 /**
+ * Получает локальную версию из package.json
+ */
+async function getLocalVersion(localPath) {
+    return new Promise((resolve, reject) => {
+        const packageJsonPath = path.join(localPath, 'package.json');
+        fs.readFile(packageJsonPath, 'utf8', (err, data) => {
+            if (err) {
+                return reject(`Error reading local package.json: ${err.message}`);
+            }
+            const packageJson = JSON.parse(data);
+            resolve(packageJson.version);
+        });
+    });
+}
+
+/**
+ * Получает версию из удаленного package.json
+ */
+async function getRemoteVersion(localPath) {
+    return new Promise((resolve, reject) => {
+        exec(`git -C ${localPath} show origin/main:package.json`, (error, stdout, stderr) => {
+            if (error) {
+                return reject(`Error fetching remote package.json: ${stderr}`);
+            }
+            const packageJson = JSON.parse(stdout);
+            resolve(packageJson.version);
+        });
+    });
+}
+
+/**
+ * Проверка версий и обновление плагина
+ */
+async function checkForPluginUpdates(repoUrl, localPath) {
+    const localVersion = await getLocalVersion(localPath);
+    const remoteVersion = await getRemoteVersion(localPath);
+
+    if (localVersion !== remoteVersion) {
+        console.log(`Version change detected: local (${localVersion}), remote (${remoteVersion})`);
+        // Выполняем резервное копирование и обновление
+        await updatePluginWithBackup(repoUrl, localPath);
+    } else {
+        console.log('No version change detected.');
+    }
+}
+
+/**
  * Создает резервную копию папки плагина
  */
 async function backupPluginFolder(localPath) {
@@ -135,14 +182,7 @@ async function checkForLocalChanges(localPath) {
                 console.error(`Error when checking local changes: ${stderr}`);
                 reject(error);
             } else {
-                if (stdout.trim()) {
-                    // Есть локальные изменения
-                    console.log('Local changes in the plugin have been detected.');
-                    resolve(true);
-                } else {
-                    // Локальных изменений нет
-                    resolve(false);
-                }
+                resolve(!!stdout.trim());
             }
         });
     });
@@ -163,34 +203,6 @@ async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAu
         console.log(`Plugin update available for ${repoUrl}, but it is not in the list of those allowed for automatic updates.`);
         console.log(`To update manually, perform: git -C ${localPath} pull`);
     }
-}
-
-/**
- * Проверка наличия обновлений для плагина
- */
-async function checkForPluginUpdates(repoUrl, localPath) {
-    return new Promise((resolve, reject) => {
-        exec(`git -C ${localPath} fetch`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error when receiving repository updates: ${stderr}`);
-                reject(error);
-            } else {
-                exec(`git -C ${localPath} diff --name-only origin/main`, (diffError, changes) => {
-                    if (diffError) {
-                        console.error(`Error during change verification: ${diffError}`);
-                        reject(diffError);
-                    } else if (changes) {
-                        console.log(`Detected changes to the plugin from ${repoUrl}: ${changes}`);
-                        // Обновляем с резервным копированием и сбросом изменений
-                        updatePluginWithBackup(repoUrl, localPath).then(resolve).catch(reject);
-                    } else {
-                        console.log(`No updates found for plugin from ${repoUrl}`);
-                        resolve();
-                    }
-                });
-            }
-        });
-    });
 }
 
 /**
