@@ -127,10 +127,13 @@ const { Command } = require('blockmind');
 class TestCommand extends Command {
     constructor() {
         super({
-            name: 'test',
-            argsCount: 0,
-            permissions: 'user.say',
-            allowedChatTypes: ['local', 'private']
+            name = 'test',
+            argsCount = 0,
+            permissions = 'user.say',
+            allowedChatTypes = ['local', 'private', 'global'],
+            cooldown = 0, // ms
+            variations = ['test1', 'test2'],
+            isActive = true
         });
     }
 
