@@ -13,7 +13,11 @@
 
 Вы можете найти пример использования библиотеки **BlockMind** в этом репозитории:
 
-[🔗 BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+🔗 [BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+
+ [Quickstart Readme](https://github.com/mmeerrkkaa/blockmind-example/blob/main/Readme.quickstart.md)
+
+🛠 [Create Custom Database Models](https://github.com/blockmindJS/blockmind-example/blob/main/README_Database_Models.md)
 
 ---
 
