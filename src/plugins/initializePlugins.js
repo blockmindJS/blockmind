@@ -307,13 +307,7 @@ async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowe
             const pluginName = pluginConfig.name || pluginFunction.name || 'UnnamedPlugin';
 
             pluginFunction(bot, { ...pluginConfig.options, name: pluginName });
-            console.log(`Плагин ${pluginName} загружен.`);
-
-            if (bot.customPlugins[pluginName]) {
-                console.log(`Плагин ${pluginName} успешно добавлен в bot.customPlugins.`);
-            } else {
-                console.error(`Ошибка при добавлении плагина ${pluginName} в bot.customPlugins.`);
-            }
+            console.log(`Plugin ${pluginName} loaded.`);
         }
     }
 }
