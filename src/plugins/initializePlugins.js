@@ -283,7 +283,12 @@ async function loadPluginFromGithub(repoUrl, localPath, pluginsAutoUpdate = fals
 /**
  * Initializes plugins.
  */
-async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
+async function initializePlugins(bot, plugins = [], pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
+
+    if (!Array.isArray(plugins)) {
+        return;
+    }
+
     if (!bot.customPlugins) {
         bot.customPlugins = {};
     }
