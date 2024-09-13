@@ -13,7 +13,11 @@ This is the main documentation in **English**. You can also view the documentati
 
 You can find a working example of using the **BlockMind** library in this repository:
 
-[🔗 BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+🔗 [BlockMind Example Repository](https://github.com/mmeerrkkaa/blockmind-example)
+
+ [Quickstart Readme](https://github.com/mmeerrkkaa/blockmind-example/blob/main/Readme.quickstart.md)
+
+🛠 [Create Custom Database Models](https://github.com/blockmindJS/blockmind-example/blob/main/README_Database_Models.md)
 
 ---
 
