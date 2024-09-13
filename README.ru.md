@@ -73,7 +73,6 @@ const botOptions = {
     allowedAutoUpdateRepos: [] , // Доверенные репозитории которые автоматически будут обновлятся, если pluginsAutoUpdate = false
 
     plugins: [
-        { type: 'github', repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins', localPath: './plugins/CustomAuthPlugin' }
     ]
 }
 ```
@@ -82,37 +81,98 @@ const botOptions = {
 
 ### Создание плагина
 
-Плагины могут быть созданы и интегрированы в вашего бота. Вот пример:
+Плагины могут быть созданы и интегрированы в вашего бота. Каждый плагин должен быть экспортирован как функция, которая принимает объект бота и параметры.
+
+### Пример структуры плагина
+
+Ваш плагин должен быть расположен в структуре директорий, например:
+
+```
+plugins/
+│
+├── CustomPlugin/
+│   ├── src/
+│   │   └── CustomPlugin.js
+│   └── index.js
+```
+
+### index.js
+
+Файл `index.js` отвечает за загрузку плагина и его инициализацию.
 
 ```javascript
-class CustomAuthPlugin {
-    constructor(bot) {
+const CustomPlugin = require('./src/CustomPlugin');
+
+// Функция для загрузки плагина
+module.exports = (bot, options) => {
+    const plugin = new CustomPlugin(bot, options);
+
+    // Сохранение ссылки на плагин для использования позже
+    bot.customPlugins[options.name] = plugin;
+
+    // Запуск плагина
+    plugin.start();
+};
+```
+
+### src/CustomPlugin.js
+
+Это основной файл вашего плагина, где находится вся логика.
+
+```javascript
+class CustomPlugin {
+    constructor(bot, options = {}) {
         this.bot = bot;
+        this.options = options;
     }
 
     start() {
-        console.log('CustomAuthPlugin started');
-        this.bot.on('spawn', async () => {
-            // Your logic here
+        console.log('Custom Plugin started');
+
+        this.bot.on('spawn', () => {
+            console.log('Bot has spawned in the game');
         });
     }
 }
 
-module.exports = CustomAuthPlugin;
+module.exports = CustomPlugin;
 ```
 
-### Добавление плагинов
+### Подключение плагина к боту
 
-Вы можете загружать плагины как с локальных путей, так и из GitHub репозиториев:
+Чтобы подключить плагин к вашему боту, добавьте его в список плагинов:
+
 
 ```javascript
-const botOptions = {
-    plugins: [
-        { type: 'local', path: './plugins/CustomAuthPlugin' },
-        { type: 'github', repoUrl: 'https://github.com/your-repo/examplePlugins', localPath: './plugins/examplePlugin' }
-    ]
-};
+plugins: [
+    {
+        name: "CustomPlugin",
+        type: "local",
+        path: "./plugins/CustomPlugin",
+        options: {
+            // Здесь можно передать любые опции для плагина
+        }
+    }
+]
 ```
+
+Его также можно загрузить на github, чтобы передать другому человеку.
+
+```js
+plugins: [
+    {
+        name: 'CustomPlugin',
+        type: 'github',
+        repoUrl: 'https://github.com/username/CustomPlugin',
+        localPath: './plugins/CustomPlugin',
+        options: {
+            // Здесь можно передать любые опции для плагина
+        }
+    }
+]
+```
+
+Так же в папке с ботом может быть папка commands, команды оттуда так же будут интегрированы в основной код бота
 
 
 ## 💬 Создание команд
