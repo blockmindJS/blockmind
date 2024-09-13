@@ -74,7 +74,15 @@ const botOptions = {
     allowedAutoUpdateRepos: [] , // Trusted repositories that will be automatically updated if pluginsAutoUpdate = false
 
     plugins: [
-        { type: 'github', repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins', localPath: './plugins/CustomAuthPlugin' }
+        {
+            name: 'AuthPlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins',
+            localPath: './plugins/CustomAuthPlugin',
+            options: {
+                MC_SERVER: '1',
+            }
+        }
     ]
 }
 ```
@@ -109,8 +117,24 @@ You can upload plugins either from local paths or from GitHub repositories:
 ```javascript
 const botOptions = {
     plugins: [
-        { type: 'local', path: './plugins/CustomAuthPlugin' },
-        { type: 'github', repoUrl: 'https://github.com/your-repo/examplePlugins', localPath: './plugins/examplePlugin' }
+        {
+            name: 'AuthPlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins',
+            localPath: './plugins/CustomAuthPlugin',
+            options: {
+                MC_SERVER: '1',
+            }
+        },
+        {
+            name: "LocalAuthPlugin",
+            type: "local",
+            path: "./plugins/LocalAuthPlugin",
+            options: {
+                MC_SERVER: "1",
+            }
+        }
+
     ]
 };
 ```
