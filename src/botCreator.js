@@ -45,6 +45,7 @@ async function createBot(botOptions) {
     bot.COMMAND_PREFIX = botOptions.COMMAND_PREFIX || '@';
     bot.pluginsAutoUpdate = botOptions.pluginsAutoUpdate || false;
     bot.allowedAutoUpdateRepos = botOptions.allowedAutoUpdateRepos || [];
+    bot.customPlugins = botOptions.plugins || {};
 
     bot.getRepository = function (repositoryType) {
         return RepositoryFactory.getRepository(repositoryType);

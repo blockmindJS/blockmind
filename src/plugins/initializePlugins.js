@@ -235,6 +235,9 @@ async function checkForLocalChanges(localPath) {
 /**
  * Clones or updates the repository from GitHub.
  */
+/**
+ * Clones or updates the repository from GitHub.
+ */
 async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate = false, allowedAutoUpdateUrls = []) {
     const isAllowed = autoUpdate || (Array.isArray(allowedAutoUpdateUrls) && allowedAutoUpdateUrls.includes(repoUrl));
 
@@ -246,8 +249,11 @@ async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate = false, a
     } else {
         console.log(`Plugin update available for ${repoUrl}, but it is not in the list of those allowed for automatic updates.`);
         console.log(`To update manually, perform: git -C ${localPath} pull`);
+        console.log(`autoUpdate: ${autoUpdate}`);
+        console.log(`allowedAutoUpdateUrls: ${allowedAutoUpdateUrls}`);
     }
 }
+
 
 /**
  * Clones the repository.
@@ -269,8 +275,8 @@ async function cloneRepository(repoUrl, localPath) {
 /**
  * Loads the plugin from GitHub.
  */
-async function loadPluginFromGithub(repoUrl, localPath) {
-    await cloneOrUpdateRepository(repoUrl, localPath);
+async function loadPluginFromGithub(repoUrl, localPath, pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
+    await cloneOrUpdateRepository(repoUrl, localPath, pluginsAutoUpdate, allowedAutoUpdateUrls);
     return require(path.join(localPath, 'index.js'));
 }
 
@@ -278,6 +284,11 @@ async function loadPluginFromGithub(repoUrl, localPath) {
  * Initializes plugins.
  */
 async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
+    if (!bot.customPlugins) {
+        bot.customPlugins = {};
+    }
+
+
     for (const pluginConfig of plugins) {
         let pluginFunction;
 
@@ -293,10 +304,21 @@ async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowe
         }
 
         if (pluginFunction) {
-            bot.loadPlugin((botInstance) => pluginFunction(botInstance, pluginConfig.options || {}));
-            console.log(`Plugin ${pluginConfig.name || pluginFunction.name} Loaded.`);
+            const pluginName = pluginConfig.name || pluginFunction.name || 'UnnamedPlugin';
+
+            pluginFunction(bot, { ...pluginConfig.options, name: pluginName });
+            console.log(`Плагин ${pluginName} загружен.`);
+
+            if (bot.customPlugins[pluginName]) {
+                console.log(`Плагин ${pluginName} успешно добавлен в bot.customPlugins.`);
+            } else {
+                console.error(`Ошибка при добавлении плагина ${pluginName} в bot.customPlugins.`);
+            }
         }
     }
 }
+
+
+
 
 module.exports = { initializePlugins };
