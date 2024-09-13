@@ -23,7 +23,7 @@ async function initializeSQLiteModels(sequelize, customModels = {}) {
         initializedCustomModels[modelName] = initializeCustomModel(sequelize);
     }
 
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 
     return {
         User: UserSQLite,
