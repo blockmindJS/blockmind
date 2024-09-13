@@ -1,27 +1,20 @@
 class BasePlugin {
-    constructor(bot) {
+    /**
+     * @param {BotInstance} bot - The bot instance
+     * @param {Object} options - Plugin-specific options
+     */
+    constructor(bot, options = {}) {
         this.bot = bot;
+        this.options = options;
+        this.pluginName = this.constructor.name;
     }
 
-    /**
-     * Основной метод, который запускает плагин.
-     */
-    start() {
-        console.log(`${this.constructor.name} plugin started`);
+    async start() {
+        console.log(`[$${this.pluginName}] plugin started with options:`, this.options);
     }
 
-    /**
-     * Метод, который может обрабатывать сообщения или любые другие действия.
-     */
-    handleMessage(jsonMsg) {
-        console.log(`${this.constructor.name} received message: ${jsonMsg}`);
-    }
-
-    /**
-     * Метод, который может реагировать на определенные события бота.
-     */
     onEvent(eventName, eventData) {
-        console.log(`${this.constructor.name} handled event: ${eventName}`);
+        console.log(`${this.pluginName} handled event: ${eventName}`);
     }
 }
 

@@ -3,7 +3,45 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 /**
- * Получает локальную версию из package.json
+ * Fetches the latest remote references.
+ */
+async function fetchRemote(localPath) {
+    return new Promise((resolve, reject) => {
+        exec(`git -C ${localPath} fetch`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error when fetching remote: ${stderr}`);
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+/**
+ * Gets the default remote branch.
+ */
+async function getDefaultRemoteBranch(localPath) {
+    return new Promise((resolve, reject) => {
+        exec(`git -C ${localPath} symbolic-ref refs/remotes/origin/HEAD`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error when getting default remote branch: ${stderr}`);
+                reject(error);
+            } else {
+                const branchRef = stdout.trim();
+                const match = branchRef.match(/^refs\/remotes\/origin\/(.+)$/);
+                if (match) {
+                    resolve(match[1]);
+                } else {
+                    reject(new Error(`Could not determine default remote branch from ${branchRef}`));
+                }
+            }
+        });
+    });
+}
+
+/**
+ * Gets the local version from package.json.
  */
 async function getLocalVersion(localPath) {
     return new Promise((resolve, reject) => {
@@ -19,38 +57,44 @@ async function getLocalVersion(localPath) {
 }
 
 /**
- * Получает версию из удаленного package.json
+ * Gets the remote version from package.json.
  */
 async function getRemoteVersion(localPath) {
-    return new Promise((resolve, reject) => {
-        exec(`git -C ${localPath} show origin/main:package.json`, (error, stdout, stderr) => {
-            if (error) {
-                return reject(`Error fetching remote package.json: ${stderr}`);
-            }
-            const packageJson = JSON.parse(stdout);
-            resolve(packageJson.version);
+    try {
+        const defaultBranch = await getDefaultRemoteBranch(localPath);
+        return new Promise((resolve, reject) => {
+            exec(`git -C ${localPath} show origin/${defaultBranch}:package.json`, (error, stdout, stderr) => {
+                if (error) {
+                    return reject(`Error fetching remote package.json: ${stderr}`);
+                }
+                const packageJson = JSON.parse(stdout);
+                resolve(packageJson.version);
+            });
         });
-    });
+    } catch (err) {
+        throw new Error(`Error determining default remote branch: ${err.message}`);
+    }
 }
 
 /**
- * Проверка версий и обновление плагина
+ * Checks for plugin updates and updates if necessary.
  */
 async function checkForPluginUpdates(repoUrl, localPath) {
+    await fetchRemote(localPath);
+
     const localVersion = await getLocalVersion(localPath);
     const remoteVersion = await getRemoteVersion(localPath);
 
     if (localVersion !== remoteVersion) {
         console.log(`Version change detected: local (${localVersion}), remote (${remoteVersion})`);
-        // Выполняем резервное копирование и обновление
         await updatePluginWithBackup(repoUrl, localPath);
     } else {
-        console.log('No version change detected.');
+        console.log('Plugin is up to date.');
     }
 }
 
 /**
- * Создает резервную копию папки плагина
+ * Creates a backup of the plugin folder.
  */
 async function backupPluginFolder(localPath) {
     return new Promise((resolve, reject) => {
@@ -79,7 +123,7 @@ async function backupPluginFolder(localPath) {
 }
 
 /**
- * Рекурсивное копирование папки
+ * Recursively copies a folder.
  */
 function copyFolderRecursive(source, target, callback) {
     fs.access(source, (err) => {
@@ -132,7 +176,7 @@ function copyFolderRecursive(source, target, callback) {
 }
 
 /**
- * Отбрасывает все локальные изменения перед обновлением
+ * Discards all local changes before updating.
  */
 async function discardLocalChanges(localPath) {
     return new Promise((resolve, reject) => {
@@ -149,7 +193,7 @@ async function discardLocalChanges(localPath) {
 }
 
 /**
- * Обновляет плагин с предварительным резервным копированием и сбросом изменений
+ * Updates the plugin with backup and resets changes.
  */
 async function updatePluginWithBackup(repoUrl, localPath) {
     const hasLocalChanges = await checkForLocalChanges(localPath);
@@ -173,7 +217,7 @@ async function updatePluginWithBackup(repoUrl, localPath) {
 }
 
 /**
- * Проверяет наличие локальных изменений в репозитории
+ * Checks for local changes in the repository.
  */
 async function checkForLocalChanges(localPath) {
     return new Promise((resolve, reject) => {
@@ -189,10 +233,10 @@ async function checkForLocalChanges(localPath) {
 }
 
 /**
- * Клонирование или обновление репозитория с GitHub
+ * Clones or updates the repository from GitHub.
  */
-async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls) {
-    const isAllowed = autoUpdate || allowedAutoUpdateUrls.includes(repoUrl);
+async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate = false, allowedAutoUpdateUrls = []) {
+    const isAllowed = autoUpdate || (Array.isArray(allowedAutoUpdateUrls) && allowedAutoUpdateUrls.includes(repoUrl));
 
     if (!fs.existsSync(localPath)) {
         console.log(`The plugin directory does not exist. Cloning from ${repoUrl}`);
@@ -206,16 +250,16 @@ async function cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAu
 }
 
 /**
- * Клонирование репозитория
+ * Clones the repository.
  */
 async function cloneRepository(repoUrl, localPath) {
     return new Promise((resolve, reject) => {
         exec(`git clone ${repoUrl} ${localPath}`, (error, stdout, stderr) => {
             if (error) {
-                console.error(`Error when cloning a repository: ${stderr}`);
+                console.error(`Error when cloning the repository: ${stderr}`);
                 reject(error);
             } else {
-                console.log(`The plugin is cloned from ${repoUrl}`);
+                console.log(`Plugin cloned from ${repoUrl}`);
                 resolve();
             }
         });
@@ -223,26 +267,24 @@ async function cloneRepository(repoUrl, localPath) {
 }
 
 /**
- * Загрузка плагина с GitHub
+ * Loads the plugin from GitHub.
  */
-async function loadPluginFromGithub(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls) {
-    await cloneOrUpdateRepository(repoUrl, localPath, autoUpdate, allowedAutoUpdateUrls);
+async function loadPluginFromGithub(repoUrl, localPath) {
+    await cloneOrUpdateRepository(repoUrl, localPath);
     return require(path.join(localPath, 'index.js'));
 }
 
 /**
- * Инициализация плагинов
+ * Initializes plugins.
  */
 async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowedAutoUpdateUrls = []) {
-    const loadedPlugins = [];
-
     for (const pluginConfig of plugins) {
-        let PluginClass;
+        let pluginFunction;
 
         if (pluginConfig.type === 'local') {
-            PluginClass = require(path.resolve(process.cwd(), pluginConfig.path));
+            pluginFunction = require(path.resolve(process.cwd(), pluginConfig.path));
         } else if (pluginConfig.type === 'github' || pluginConfig.type === 'git') {
-            PluginClass = await loadPluginFromGithub(
+            pluginFunction = await loadPluginFromGithub(
                 pluginConfig.repoUrl,
                 path.resolve(process.cwd(), pluginConfig.localPath),
                 pluginsAutoUpdate,
@@ -250,14 +292,11 @@ async function initializePlugins(bot, plugins, pluginsAutoUpdate = false, allowe
             );
         }
 
-        if (PluginClass) {
-            const pluginInstance = new PluginClass(bot);
-            pluginInstance.start();
-            loadedPlugins.push(pluginInstance);
+        if (pluginFunction) {
+            bot.loadPlugin((botInstance) => pluginFunction(botInstance, pluginConfig.options || {}));
+            console.log(`Plugin ${pluginConfig.name || pluginFunction.name} Loaded.`);
         }
     }
-
-    return loadedPlugins;
 }
 
 module.exports = { initializePlugins };

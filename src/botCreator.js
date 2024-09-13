@@ -5,7 +5,7 @@ const { registerEventHandlers } = require("./app/events/eventHandlers");
 const initializeDatabase = require("./database/dbInitializer");
 const { setConfig } = require("./config/config");
 const RepositoryFactory = require('./database/repositories/repositoryFactory');
-const { commandsRegistry } = require("./index");
+// const { commandsRegistry } = require("./index");
 const { initializePlugins } = require('./plugins/initializePlugins');
 
 /**
@@ -58,7 +58,7 @@ async function createBot(botOptions) {
     initializeMessageQueue(bot);
 
     if (botOptions.host === "mc.masedworld.net" || botOptions.host === "mc.mineblaze.net" || botOptions.host === "mc.cheatmine.net") {
-        registerEventHandlers(bot, commandsRegistry);
+        registerEventHandlers(bot, bot.commandsRegistry);
     }
 
     /**

@@ -1,6 +1,7 @@
 const { getConfig } = require("../../config/config");
 const UserRepository = require('./userRepository');
 const permissionRepository = require("./permissionRepository");
+const GroupRepository = require("./groupRepository");
 
 class RepositoryFactory {
     static getRepository(repositoryType) {
@@ -12,7 +13,7 @@ class RepositoryFactory {
 
         const repoMap = {
             user: () => new UserRepository(config.dbType),
-            group: () => new UserRepository(config.dbType),
+            group: () => new GroupRepository(config.dbType),
             permission: () => new permissionRepository(config.dbType),
         };
 
