@@ -73,6 +73,15 @@ const botOptions = {
     allowedAutoUpdateRepos: [] , // Доверенные репозитории которые автоматически будут обновлятся, если pluginsAutoUpdate = false
 
     plugins: [
+        {
+            name: 'ExamplePlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/blockmindJS/blockmind-examplePlugins',
+            localPath: './plugins/CustomExamplePlugin',
+            options: {
+                // Any options for the plugin can be passed here
+            }
+        }
     ]
 }
 ```
@@ -160,16 +169,16 @@ plugins: [
 
 ```js
 plugins: [
-    {
-        name: 'CustomPlugin',
-        type: 'github',
-        repoUrl: 'https://github.com/username/CustomPlugin',
-        localPath: './plugins/CustomPlugin',
-        options: {
-            // Здесь можно передать любые опции для плагина
+        {
+            name: 'ExamplePlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/blockmindJS/blockmind-examplePlugins',
+            localPath: './plugins/CustomExamplePlugin',
+            options: {
+                // Any options for the plugin can be passed here
+            }
         }
-    }
-]
+    ]
 ```
 
 Так же в папке с ботом может быть папка commands, команды оттуда так же будут интегрированы в основной код бота
@@ -241,14 +250,4 @@ module.exports = TestCommand;
  
 ```js
 bot.pluginsAutoUpdate = ['https://github.com/mmeerrkkaa/examplePlugins'];
-```
-
-Подключение плагинов происходит в botOptions
-
-```js
-const botOptions = {
-    plugins: [
-        { type: 'github', repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins', localPath: './plugins/CustomAuthPlugin' }
-    ]
-};
 ```
