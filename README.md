@@ -74,6 +74,14 @@ const botOptions = {
     allowedAutoUpdateRepos: [] , // Trusted repositories that will be automatically updated if pluginsAutoUpdate = false
 
     plugins: [
+        {
+            name: 'ExamplePlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/blockmindJS/blockmind-examplePlugins',
+            localPath: './plugins/CustomExamplePlugin',
+            options: {
+                // Any options for the plugin can be passed here
+            }
         }
     ]
 }
@@ -161,16 +169,16 @@ It can also be uploaded to github to be passed on to another person
 
 ```js
 plugins: [
-    {
-        name: 'CustomPlugin',
-        type: 'github',
-        repoUrl: 'https://github.com/username/CustomPlugin',
-        localPath: './plugins/CustomPlugin',
-        options: {
-            // Any options for the plugin can be passed here
+        {
+            name: 'ExamplePlugin',
+            type: 'github',
+            repoUrl: 'https://github.com/blockmindJS/blockmind-examplePlugins',
+            localPath: './plugins/CustomExamplePlugin',
+            options: {
+                // Any options for the plugin can be passed here
+            }
         }
-    }
-]
+    ]
 ```
 Also in the folder with the bot can be a folder commands, commands from there will also be integrated into the main code of the bot
 
@@ -240,14 +248,4 @@ To connect a plugin, add it to the configuration file of your project.
  
 ```js
 bot.pluginsAutoUpdate = ['https://github.com/mmeerrkkaa/examplePlugins'];
-```
-
-Plugins are connected in botOptions
-
-```js
-const botOptions = {
-    plugins: [
-        { type: 'github', repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins', localPath: './plugins/CustomAuthPlugin' }
-    ]
-};
 ```
