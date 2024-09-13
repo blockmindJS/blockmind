@@ -74,70 +74,105 @@ const botOptions = {
     allowedAutoUpdateRepos: [] , // Trusted repositories that will be automatically updated if pluginsAutoUpdate = false
 
     plugins: [
-        {
-            name: 'AuthPlugin',
-            type: 'github',
-            repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins',
-            localPath: './plugins/CustomAuthPlugin',
-            options: {
-                MC_SERVER: '1',
-            }
         }
     ]
 }
 ```
 
+
 ## 📦 Plugin development
 
-### Creating a plugin
+### Creating a plug-in
 
-Plugins can be created and integrated into your bot. Here's an example:
+Plugins can be created and integrated into your bot. Each plugin must be exported as a function that accepts a bot object and parameters.
+
+### Example plugin structure
+
+Your plugin should be located in a directory structure such as:
+
+```
+plugins/
+│
+├── CustomPlugin/
+│   ├── src/
+│   │   └── CustomPlugin.js
+│   └── index.js
+```
+
+### index.js
+
+The `index.js` file is responsible for loading the plugin and initializing it.
 
 ```javascript
-class CustomAuthPlugin {
-    constructor(bot) {
+const CustomPlugin = require('./src/CustomPlugin');
+
+// Function for loading the plugin
+module.exports = (bot, options) => {
+    const plugin = new CustomPlugin(bot, options);
+
+    // Saving a link to the plugin for use later
+    bot.customPlugins[options.name] = plugin;
+
+    plugin.start();
+};
+```
+
+### src/CustomPlugin.js
+
+This is the main file of your plugin, where all the logic is located.
+
+```javascript
+class CustomPlugin {
+    constructor(bot, options = {}) {
         this.bot = bot;
+        this.options = options;
     }
 
     start() {
-        console.log('CustomAuthPlugin started');
-        this.bot.on('spawn', async () => {
-            // Your logic here
+        console.log('Custom Plugin started');
+
+        this.bot.on('spawn', () => {
+            console.log('Bot has spawned in the game');
         });
     }
 }
 
-module.exports = CustomAuthPlugin;
+module.exports = CustomPlugin;
 ```
 
-### Adding plugins
+### Connecting the plugin to the bot
 
-You can upload plugins either from local paths or from GitHub repositories:
+To connect a plugin to your bot, add it to your plugin list:
 
 ```javascript
-const botOptions = {
-    plugins: [
-        {
-            name: 'AuthPlugin',
-            type: 'github',
-            repoUrl: 'https://github.com/mmeerrkkaa/examplePlugins',
-            localPath: './plugins/CustomAuthPlugin',
-            options: {
-                MC_SERVER: '1',
-            }
-        },
-        {
-            name: "LocalAuthPlugin",
-            type: "local",
-            path: "./plugins/LocalAuthPlugin",
-            options: {
-                MC_SERVER: "1",
-            }
+plugins: [
+    {
+        name: "CustomPlugin",
+        type: "local",
+        path: "./plugins/CustomPlugin",
+        options: {
+            // Any options for the plugin can be passed here
         }
-
-    ]
-};
+    }
+]
 ```
+
+It can also be uploaded to github to be passed on to another person
+
+```js
+plugins: [
+    {
+        name: 'CustomPlugin',
+        type: 'github',
+        repoUrl: 'https://github.com/username/CustomPlugin',
+        localPath: './plugins/CustomPlugin',
+        options: {
+            // Any options for the plugin can be passed here
+        }
+    }
+]
+```
+Also in the folder with the bot can be a folder commands, commands from there will also be integrated into the main code of the bot
 
 
 ## 💬 Creating commands
