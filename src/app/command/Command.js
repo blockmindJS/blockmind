@@ -37,6 +37,20 @@ class Command {
 
         /** @type {string[]} */
         this.variations = variations;
+
+        /** @type {Map<string, number>} */
+        this.cooldowns = new Map();
+
+
+        setInterval(() => {
+            const now = Date.now();
+            for (const [username, lastUsed] of this.cooldowns) {
+                if (now - lastUsed > this.cooldown) {
+                    this.cooldowns.delete(username);
+                }
+            }
+        }, 300000);
+
     }
 
     /**
@@ -72,8 +86,24 @@ class Command {
             return this.onCommandNotActive(bot, typeChat, user.username);
         }
 
+        const now = Date.now();
+
+        if (this.cooldown > 0) {
+            const lastUsed = this.cooldowns.get(this.user.username) || 0;
+            const timePassed = now - lastUsed;
+
+            if (timePassed < this.cooldown) {
+                const timeLeft = this.cooldown - timePassed;
+                return this.onCooldown(bot, typeChat, this.user.username, timeLeft);
+            }
+        }
+
         try {
             await this.handler(bot, typeChat, this.user, ...args);
+
+            if (this.cooldown > 0) {
+                this.cooldowns.set(this.user.username, now);
+            }
         } catch (error) {
             this.onError(bot, typeChat, user.username, error);
         }
@@ -139,6 +169,18 @@ class Command {
      */
     onBlacklisted(bot, typeChat, username) {
         //
+    }
+
+    /**
+     * Handles when a user is on cooldown.
+     * @param {Object} bot
+     * @param {string} typeChat
+     * @param {string} username
+     * @param {number} timeLeft - Time left in milliseconds
+     */
+    onCooldown(bot, typeChat, username, timeLeft) {
+        const seconds = Math.ceil(timeLeft / 1000);
+        bot.sendMessage(typeChat, `Пожалуйста, подождите ${seconds} секунд перед использованием команды ${this.name} снова.`, username);
     }
 
     /**
