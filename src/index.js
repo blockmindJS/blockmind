@@ -5,7 +5,6 @@ const {commandHandler} = require("./app/handlers/commandHandler");
 const Users = require('./database/repositories/Users');
 const Permission = require('./database/repositories/Permission');
 const Group = require('./database/repositories/Group');
-const BasePlugin = require('./plugins/BasePlugin');
 
 module.exports = {
     createBot,
@@ -15,5 +14,4 @@ module.exports = {
     Users,
     Permission,
     Group,
-    BasePlugin
 };
