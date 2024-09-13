@@ -37,7 +37,11 @@ async function createBot(botOptions) {
     const bot = /** @type {BotInstance} */ (mineflayer.createBot(botOptions));
 
     Object.keys(botOptions).forEach((key) => { // shit
-        bot[key] = botOptions[key];
+        if (key !== 'plugins') {
+            bot[key] = botOptions[key];
+        }
+
+
     });
 
     await initializeDatabase(botOptions);
@@ -76,7 +80,6 @@ async function createBot(botOptions) {
      *     }
      */
     bot.sendMessage = function (chatType, message, username = '', delay = 50) {
-        // Используем задержку из chatTypes, а не из botOptions.delayConfig
         const messageQueue = getQueueInstance();
         const delayConfig = messageQueue.chatTypes[chatType].delay || delay;
         messageQueue.enqueueMessage(chatType, message, username, { [chatType]: delayConfig });
@@ -84,8 +87,9 @@ async function createBot(botOptions) {
 
 
     if (botOptions.plugins) {
-        bot.plugins = await initializePlugins(bot, botOptions.plugins, botOptions.pluginsAutoUpdate, botOptions.allowedAutoUpdateRepos);
+        bot.customPlugins = await initializePlugins(bot, botOptions.plugins, botOptions.pluginsAutoUpdate, botOptions.allowedAutoUpdateRepos);
     }
+
 
     return bot;
 }
