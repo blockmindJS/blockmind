@@ -32,7 +32,6 @@ const { initializePlugins } = require('./plugins/initializePlugins');
  */
 async function createBot(botOptions) {
     setConfig(botOptions);
-    console.log(botOptions);
 
     const bot = /** @type {BotInstance} */ (mineflayer.createBot(botOptions));
 
@@ -65,7 +64,6 @@ async function createBot(botOptions) {
     if (botOptions.host === "mc.masedworld.net" || botOptions.host === "mc.mineblaze.net" || botOptions.host === "mc.cheatmine.net") {
         registerEventHandlers(bot, bot.commandsRegistry);
     }
-
     /**
      * Sends a message to the chat queue.
      * @param {string} chatType - The type of chat (e.g., 'global', 'private', 'local', 'clan').
