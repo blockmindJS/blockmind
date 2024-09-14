@@ -25,7 +25,6 @@ async function processChatMessage(bot, jsonMsg) {
         if (!parsedMessage) return;
 
         const { type, nick, message } = parsedMessage;
-
         await commandHandler(bot, type, nick, message, bot.commandsRegistry);
 
     } catch (error) {
@@ -33,6 +32,13 @@ async function processChatMessage(bot, jsonMsg) {
     }
 }
 
+/**
+ * Handles a command from a message.
+ * @param {Object} bot - The bot instance.
+ * @param {string} type - The type of chat (e.g. 'global', 'local', 'clan').
+ * @param {string} nick - username of the sender
+ * @param {string} message - The message text.
+ */
 async function commandHandler(bot, type, nick, message) {
     const COMMAND_PREFIX = bot.COMMAND_PREFIX || '@';
     if (!message.startsWith(COMMAND_PREFIX)) {
