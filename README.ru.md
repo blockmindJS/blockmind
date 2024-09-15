@@ -255,3 +255,76 @@ module.exports = TestCommand;
 ```js
 bot.pluginsAutoUpdate = ['https://github.com/mmeerrkkaa/examplePlugins'];
 ```
+
+
+# 🚀 Quck Start
+
+## 📦 Установка
+Чтобы начать работу, установите библиотеку blockmind через npm:
+
+```bash
+npm install blockmind
+```
+
+## 🛠️ Настройка и запуск бота
+
+Пример базовой настройки для запуска бота:
+
+```javascript
+const { createBot } = require('blockmind');
+const { commandHandler } = require('blockmind');
+
+const botOptions = {
+    host: 'localhost',         // IP of the server
+    username: '',              // Bot username
+    dbType: 'sqlite',          // Database type. (sqlite, mongo)
+    version: '1.20.1',         // Minecraft version
+    password: '',              // Password (if required)
+    COMMAND_PREFIX: '@',       // Command prefix
+};
+
+createBot(botOptions).then(async (bot) => {
+    console.log(`Bot is running with prefix: ${bot.COMMAND_PREFIX}`);
+    
+    // Example chat handling on a local server
+    bot.on('chat', async (username, message) => {
+        if (!bot.host === 'localhost') return;
+        await commandHandler(bot, 'local', username, message);
+    });
+
+    // Handling incoming messages
+    bot.on('message', async (jsonMsg) => {
+        const message = jsonMsg.toString();
+        console.log(message);
+    });
+});
+```
+
+## 🔌 Создание пользовательских команд
+
+Чтобы начать создавать свои собственные команды, просто создайте папку `commands` в своем проекте.
+
+Пример тестовой команды:
+
+```javascript
+const { Command } = require('blockmind');
+
+class TestCommand extends Command {
+    constructor() {
+        super({
+            name: 'test',
+            argsCount: 0,
+            permissions: 'user.say',
+            allowedChatTypes: ['local', 'private', 'clan'],
+            cooldown: 5000,  // Command cooldown time in milliseconds
+        });
+    }
+
+    // Логика выполнения команд
+    async handler(bot, typeChat, user) {
+        await bot.sendMessage(typeChat, `Команда test выполнена, ${user.username}!`, user.username);
+    }
+}
+
+module.exports = TestCommand;
+```
