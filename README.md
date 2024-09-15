@@ -253,3 +253,77 @@ To connect a plugin, add it to the configuration file of your project.
 ```js
 bot.pluginsAutoUpdate = ['https://github.com/mmeerrkkaa/examplePlugins'];
 ```
+
+
+
+# 🚀 Quck Start
+
+## 📦 Installation
+To get started, install the blockmind library via npm:
+
+```bash
+npm install blockmind
+```
+
+## 🛠️ Setting up and running the bot
+
+Example basic setup to start the bot:
+
+```javascript
+const { createBot } = require('blockmind');
+const { commandHandler } = require('blockmind');
+
+const botOptions = {
+    host: 'localhost',         // IP of the server
+    username: '',              // Bot username
+    dbType: 'sqlite',          // Database type. (sqlite, mongo)
+    version: '1.20.1',         // Minecraft version
+    password: '',              // Password (if required)
+    COMMAND_PREFIX: '@',       // Command prefix
+};
+
+createBot(botOptions).then(async (bot) => {
+    console.log(`Bot is running with prefix: ${bot.COMMAND_PREFIX}`);
+    
+    // Example chat handling on a local server
+    bot.on('chat', async (username, message) => {
+        if (!bot.host === 'localhost') return;
+        await commandHandler(bot, 'local', username, message);
+    });
+
+    // Handling incoming messages
+    bot.on('message', async (jsonMsg) => {
+        const message = jsonMsg.toString();
+        console.log(message);
+    });
+});
+```
+
+## 🔌 Creating custom commands
+
+To start creating your own commands, simply create a `commands` folder in your project.
+
+Example of a test command:
+
+```javascript
+const { Command } = require('blockmind');
+
+class TestCommand extends Command {
+    constructor() {
+        super({
+            name: 'test',
+            argsCount: 0,
+            permissions: 'user.say',
+            allowedChatTypes: ['local', 'private', 'clan'],
+            cooldown: 5000,  // Command cooldown time in milliseconds
+        });
+    }
+
+    // Command execution logic
+    async handler(bot, typeChat, user) {
+        await bot.sendMessage(typeChat, `The test command has been executed, ${user.username}!`, user.username);
+    }
+}
+
+module.exports = TestCommand;
+```
