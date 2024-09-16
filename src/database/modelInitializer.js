@@ -19,7 +19,6 @@ async function initializeSQLiteModels(sequelize, customModels = {}) {
 
     const initializedCustomModels = {};
     for (const [modelName, initializeCustomModel] of Object.entries(customModels)) {
-        console.log(`Initializing custom model: ${modelName}`);
         initializedCustomModels[modelName] = initializeCustomModel(sequelize);
     }
 
