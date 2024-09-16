@@ -5,8 +5,6 @@ class UserRepository extends IUserRepository {
     constructor(dbType) {
         super();
         this.dbType = dbType;
-        console.log('UserRepository constructor');
-        console.log(dbType);
         this.models = null;
     }
 
@@ -82,8 +80,6 @@ class UserRepository extends IUserRepository {
     async getUserByUsername(username) {
 
         await this.ensureModelsInitialized();
-        console.log('=============')
-        console.log(this.dbType)
 
         let user;
         if (this.dbType === 'sqlite') {
@@ -102,11 +98,10 @@ class UserRepository extends IUserRepository {
         }
 
         if (user) {
-            console.log(`Пользователь найден: ${JSON.stringify(user)}`);
             return user;
         }
 
-        console.log(`Пользователь ${username} не найден, создаем нового`);
+
         return await this.createUser({ username });
     }
 
